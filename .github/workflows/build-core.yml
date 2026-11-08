@@ -5,10 +5,12 @@ on:
     branches: [overos-custom-core]
     paths:
       - "core/**"
+      - "rice/**"
       - "scripts/build-core.sh"
       - "scripts/check-build-host.sh"
       - "scripts/stage-rootfs.sh"
       - "scripts/test-rootfs-staging.sh"
+      - "scripts/test-touch-assets.sh"
       - ".github/workflows/build-core.yml"
   workflow_dispatch:
 
@@ -27,6 +29,8 @@ jobs:
           sudo apt-get install -y --no-install-recommends build-essential cmake
       - name: Check build host prerequisites
         run: bash scripts/check-build-host.sh
+      - name: Validate touch and virtual keyboard assets
+        run: bash scripts/test-touch-assets.sh
       - name: Configure and compile
         run: bash scripts/build-core.sh
       - name: Assemble development rootfs staging tree
