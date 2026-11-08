@@ -88,6 +88,11 @@ Architecture: x86_64
 Root filesystem: Buildroot-built BusyBox/musl userland
 Kernel: upstream Linux kernel built by Buildroot
 Init: BusyBox init
+Desktop: Xfbdev + Openbox + xterm (console fallback)
+Network: NetworkManager + nmtui + WPA supplicant
+Remote access: OpenSSH server
+Packages: Specman 0.1.0 local package manager (SHA-256 required)
+System info: upstream Fastfetch with OverOS logo/configuration
 Buildroot version: 2025.02
 This is an early development image, not a production-ready OS.
 EOF
