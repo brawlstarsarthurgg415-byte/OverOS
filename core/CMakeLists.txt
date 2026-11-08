@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
-project(OverOSCore VERSION 0.1.0 LANGUAGES C CXX)
+project(OverOSCore VERSION 0.2.0 LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+include(GNUInstallDirs)
+include(CTest)
 
 add_executable(overos-init init/overos-init.c)
 target_compile_options(overos-init PRIVATE -Wall -Wextra -Wpedantic -Wconversion)
@@ -15,3 +18,14 @@ target_compile_options(overos-hardware-info PRIVATE -Wall -Wextra -Wpedantic)
 
 add_executable(overos-session session/overos-session.cpp)
 target_compile_options(overos-session PRIVATE -Wall -Wextra -Wpedantic)
+
+add_executable(overosctl tools/overosctl.cpp)
+target_compile_options(overosctl PRIVATE -Wall -Wextra -Wpedantic)
+
+install(TARGETS overos-init overos-hardware-info overos-session overosctl
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+if(BUILD_TESTING)
+  add_test(NAME overosctl-help COMMAND overosctl help)
+  add_test(NAME overosctl-version COMMAND overosctl version)
+endif()
