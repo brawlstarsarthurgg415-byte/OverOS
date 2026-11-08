@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${BUILD_DIR:-$ROOT/out/core-build}"
-ROOTFS="${ROOTFS:-$ROOT/out/rootfs-staging}"
+ROOTFS="$ROOT/out/rootfs-staging"
 
 if [ ! -x "$BUILD_DIR/overos-init" ] || [ ! -x "$BUILD_DIR/overos-session" ]; then
   echo "ERRO: binarios ausentes. Execute bash scripts/build-core.sh primeiro." >&2
