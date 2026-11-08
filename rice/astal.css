@@ -1,0 +1,96 @@
+/* OverOS Dark — GTK4/Astal candidate theme
+ * This is a visual starting point. Runtime compatibility is not yet tested.
+ */
+@define-color os_bg #0b1018;
+@define-color os_surface #121b27;
+@define-color os_surface_alt #182536;
+@define-color os_border rgba(174, 202, 230, 0.12);
+@define-color os_text #edf5ff;
+@define-color os_muted #91a4b9;
+@define-color os_accent #70d6d0;
+@define-color os_accent_soft rgba(112, 214, 208, 0.14);
+
+* {
+  font-family: "Inter", "Noto Sans", sans-serif;
+  color: @os_text;
+  -gtk-icon-style: symbolic;
+}
+
+window, .overos-root {
+  background: transparent;
+}
+
+.overos-panel {
+  background: alpha(@os_bg, 0.94);
+  border: 1px solid @os_border;
+  border-radius: 18px;
+  padding: 10px 14px;
+}
+
+.overos-card {
+  background: @os_surface;
+  border: 1px solid @os_border;
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.overos-card:hover {
+  background: @os_surface_alt;
+  border-color: alpha(@os_accent, 0.35);
+}
+
+.overos-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+
+.overos-subtitle, .overos-muted {
+  color: @os_muted;
+  font-size: 12px;
+}
+
+.overos-chip {
+  background: @os_accent_soft;
+  color: @os_accent;
+  border: 1px solid alpha(@os_accent, 0.22);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+button.overos-button {
+  background: @os_surface_alt;
+  border: 1px solid @os_border;
+  border-radius: 12px;
+  padding: 9px 13px;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+button.overos-button:hover {
+  background: alpha(@os_accent, 0.13);
+  border-color: alpha(@os_accent, 0.4);
+}
+
+button.overos-button:active {
+  background: alpha(@os_accent, 0.22);
+}
+
+.overos-separator {
+  background: @os_border;
+  min-height: 1px;
+}
+
+.overos-clock {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.overos-status-dot {
+  background: @os_accent;
+  border-radius: 999px;
+  min-width: 7px;
+  min-height: 7px;
+}
