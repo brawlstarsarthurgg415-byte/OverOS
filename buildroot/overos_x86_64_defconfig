@@ -13,6 +13,10 @@ BR2_PACKAGE_BUSYBOX=y
 BR2_PACKAGE_OPENSSH=y
 BR2_PACKAGE_CA_CERTIFICATES=y
 
+# Persistent compiler cache speeds up subsequent Buildroot builds.
+BR2_CCACHE=y
+BR2_CCACHE_USE_BASEDIR=y
+
 # Runtime support for the low-memory desktop and network setup.
 BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_EUDEV=y
 BR2_PACKAGE_EUDEV=y
