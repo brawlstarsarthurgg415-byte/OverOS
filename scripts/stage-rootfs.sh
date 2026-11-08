@@ -5,7 +5,7 @@ ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${BUILD_DIR:-$ROOT/out/core-build}"
 ROOTFS="$ROOT/out/rootfs-staging"
 
-if [ ! -x "$BUILD_DIR/overos-init" ] || [ ! -x "$BUILD_DIR/overos-session" ] || [ ! -x "$BUILD_DIR/overos-supervisor" ]; then
+if [ ! -x "$BUILD_DIR/overos-init" ] || [ ! -x "$BUILD_DIR/overos-session" ] || [ ! -x "$BUILD_DIR/overos-supervisor" ] || [ ! -x "$BUILD_DIR/overos-hardware-info" ] || [ ! -x "$BUILD_DIR/overosctl" ]; then
   echo "ERRO: binarios ausentes. Execute bash scripts/build-core.sh primeiro." >&2
   exit 1
 fi
