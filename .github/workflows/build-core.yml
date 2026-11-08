@@ -22,9 +22,10 @@ on:
       - ".github/workflows/build-core.yml"
   workflow_dispatch:
 
+# Queue new builds instead of cancelling an in-progress image build.
 concurrency:
   group: overos-custom-core-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -38,7 +39,16 @@ jobs:
       - name: Install native build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential cmake libgtk-4-dev curl wget perl python3 cpio rsync bc bison flex file unzip libncurses-dev grub-pc-bin grub-efi-amd64-bin dosfstools parted e2fsprogs mtools qemu-system-x86 zstd
+          sudo apt-get install -y --no-install-recommends build-essential ccache cmake libgtk-4-dev curl wget perl python3 cpio rsync bc bison flex file unzip libncurses-dev grub-pc-bin grub-efi-amd64-bin dosfstools parted e2fsprogs mtools qemu-system-x86 zstd
+      - name: Restore Buildroot source and compiler caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            out/buildroot-dl
+            out/buildroot-ccache
+          key: overos-buildroot-${{ runner.os }}-2025.02-${{ hashFiles('buildroot/overos_x86_64_defconfig') }}
+          restore-keys: |
+            overos-buildroot-${{ runner.os }}-2025.02-
       - name: Check build host prerequisites
         run: bash scripts/check-build-host.sh
       - name: Validate touch and virtual keyboard assets
