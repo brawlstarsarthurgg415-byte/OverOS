@@ -8,15 +8,15 @@ Este documento transforma a arquitetura em etapas verificáveis. O objetivo é u
 |---|---|
 | Núcleo C/C++ e ferramentas de diagnóstico | Protótipos no repositório |
 | Supervisor de serviços | Protótipo experimental |
-| Layout do rootfs | Documentado; staging não inicializável |
-| Toolchain e sysroot próprios | Não implementados |
-| Kernel e módulos por equipamento | Não compilados |
-| libc, shell e utilitários-base | Não integrados |
+| Rootfs Buildroot x86_64 (musl + BusyBox) | Configuração e pipeline adicionados; aguardando CI e teste de boot |
+| Toolchain e sysroot próprios | Buildroot configura toolchain musl; integração dos programas OverOS ainda pendente |
+| Kernel e módulos por equipamento | Kernel x86_64 selecionado para build via Buildroot; validação por hardware pendente |
+| libc, shell e utilitários-base | musl + BusyBox selecionados no Buildroot; validação pendente |
 | Gerenciador Pacman/libalpm | Planejado, não funcional |
 | Sessão gráfica | Protótipo de tela inicial/editor GTK4; sem compositor, login ou sessão de desktop funcional |
 | Teclado virtual e touch | Layout ABNT2, perfil tablet e estilos versionados; backend Wayland ainda pendente |
 | Boot UEFI e Secure Boot | Planejado, sem cadeia validada |
-| Imagem USB persistente | Não implementada |
+| Imagem USB persistente | Gerador de imagem BIOS/UEFI atualizado para consumir rootfs Buildroot; CI/boot ainda não validados |
 
 ## Etapa 0 — identificar os alvos
 
@@ -28,7 +28,7 @@ Não misturar os requisitos dos equipamentos. Cada perfil precisa de inventário
 
 **Aceite:** arquitetura e dispositivos identificados; nenhum disco interno alterado. Não presumir que os dois equipamentos usam a mesma arquitetura.
 
-## Etapa 1 — toolchain e sysroot
+## Etapa 1 — toolchain e sysroot\n\nPrimeira configuração adicionada em `buildroot/overos_x86_64_defconfig`. Ela seleciona x86_64, musl, BusyBox init, BusyBox userland e kernel Linux. `scripts/build-buildroot-rootfs.sh` baixa Buildroot 2025.02 e gera `out/overos-buildroot/rootfs.tar` e `bzImage`. Essa primeira configuração ainda precisa ser compilada no CI e validada em QEMU antes de ser considerada aprovada.\n\n
 
 - Escolher um triplet de destino explícito por perfil (por exemplo, x86_64 ou aarch64 somente após confirmação).
 - Construir ou selecionar uma toolchain cruzada reproduzível.
