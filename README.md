@@ -41,6 +41,7 @@ O uso de Ubuntu no runner do GitHub Actions serve apenas como máquina hospedeir
 - [x] Compilação cruzada dos programas nativos OverOS integrada ao fluxo Buildroot.
 - [x] Configuração inicial de NetworkManager/nmtui, OpenSSH, Xfbdev, Openbox e xterm.
 - [x] Specman MVP local com pacote .spkg, SHA-256 obrigatório e testes automatizados.
+- [ ] Pacman/libalpm 7.0.0 compilado para musl e integrado à imagem; validação pendente no CI. Pacotes Arch/glibc não são compatíveis; instalação local de pacotes OverOS é o primeiro alvo.
 - [ ] Repositório Specman assinado, dependências e rollback.
 - [ ] Validar build completo e boot em QEMU no CI.
 - [ ] Validar drivers, rede, touch e interface no hardware real.
