@@ -1,0 +1,3 @@
+#!/bin/sh
+# Minimal Openbox session; the console remains available if X exits.
+exec openbox-session
