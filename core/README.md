@@ -30,6 +30,12 @@ O workflow de CI foi configurado para compilar os programas, executar os testes 
 - `services/overos-supervisor.cpp`: supervisor experimental com validação de configuração e reinício básico de processos.
 - `CMakeLists.txt`: build nativo dos componentes iniciais.
 
+## Próximas etapas
+
+- `BOOTSTRAP-ROADMAP.md`: sequência de construção e critérios de aceite.
+- `SOURCE-MANIFEST.md`: política de versões, origens e hashes.
+- `HARDWARE-PROFILES.md`: matriz separada para i30 e tablet DATEN.
+
 ## Build de desenvolvimento
 
 Em uma máquina Linux com compilador C/C++ e CMake:
