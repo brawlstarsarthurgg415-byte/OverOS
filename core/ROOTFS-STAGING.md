@@ -9,7 +9,7 @@ bash scripts/build-core.sh
 bash scripts/stage-rootfs.sh
 ```
 
-O staging contem somente os quatro programas nativos iniciais e metadados `os-release`. Ele **nao e inicializavel**: ainda faltam kernel, libc, shell, drivers, firmware, bootloader, rede, audio e banco de pacotes.
+O staging contem somente os cinco programas nativos iniciais e metadados `os-release`. Ele **nao e inicializavel**: ainda faltam kernel, libc, shell, drivers, firmware, bootloader, rede, audio e banco de pacotes.
 
 O script remove e recria somente o diretorio de staging configurado dentro de `out/`. Nao procura, monta, particiona ou grava em discos fisicos. Para escolher outro caminho de staging, defina `ROOTFS=/caminho/de/staging`; use somente um diretorio de trabalho descartavel.
 
