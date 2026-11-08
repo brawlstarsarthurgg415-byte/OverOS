@@ -5,3 +5,6 @@
 - `services.conf.invalid-duplicate`: deve ser rejeitada por repetir o mesmo executavel.
 
 Os testes usam `--check-config`, portanto nao iniciam os servicos listados.
+
+- `services.conf.empty`: deve ser rejeitada porque nao declara nenhum servico.
+- O CTest tambem confirma que `overosctl` retorna erro para comandos desconhecidos.
