@@ -11,6 +11,7 @@ on:
       - "scripts/stage-rootfs.sh"
       - "scripts/test-rootfs-staging.sh"
       - "scripts/test-touch-assets.sh"
+      - "scripts/check-touchscreen.sh"
       - "scripts/check-secure-boot-tools.sh"
       - ".github/workflows/build-core.yml"
   workflow_dispatch:
@@ -32,6 +33,8 @@ jobs:
         run: bash scripts/check-build-host.sh
       - name: Validate touch and virtual keyboard assets
         run: bash scripts/test-touch-assets.sh
+      - name: Validate touchscreen diagnostic script
+        run: bash -n scripts/check-touchscreen.sh
       - name: Inventory Secure Boot development tools (read-only)
         run: bash scripts/check-secure-boot-tools.sh
       - name: Configure and compile
