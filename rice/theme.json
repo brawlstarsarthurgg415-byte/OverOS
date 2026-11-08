@@ -1,0 +1,29 @@
+{
+  "name": "OverOS Dark",
+  "version": 1,
+  "appearance": "dark",
+  "colors": {
+    "background": "#0B1018",
+    "surface": "#121B27",
+    "surfaceElevated": "#182536",
+    "text": "#EDF5FF",
+    "muted": "#91A4B9",
+    "accent": "#70D6D0",
+    "border": "rgba(174, 202, 230, 0.12)"
+  },
+  "shape": {
+    "cardRadius": 16,
+    "panelRadius": 18,
+    "buttonRadius": 12,
+    "pillRadius": 999
+  },
+  "motion": {
+    "defaultDurationMs": 140,
+    "reducedMotionSupported": true
+  },
+  "performance": {
+    "blurOptional": true,
+    "animationsOptional": true,
+    "lowEffectsMode": true
+  }
+}
