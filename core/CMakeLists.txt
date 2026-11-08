@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(OverOSCore VERSION 0.2.0 LANGUAGES C CXX)
+project(OverOSCore VERSION 0.2.1 LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -28,4 +28,6 @@ install(TARGETS overos-init overos-hardware-info overos-session overosctl
 if(BUILD_TESTING)
   add_test(NAME overosctl-help COMMAND overosctl help)
   add_test(NAME overosctl-version COMMAND overosctl version)
+  add_test(NAME overosctl-status COMMAND overosctl status)
+  add_test(NAME hardware-inventory COMMAND overos-hardware-info)
 endif()
