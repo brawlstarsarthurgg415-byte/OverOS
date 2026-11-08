@@ -35,6 +35,7 @@ O workflow de CI foi configurado para compilar os programas, executar os testes 
 - `BOOTSTRAP-ROADMAP.md`: sequência de construção e critérios de aceite.
 - `SOURCE-MANIFEST.md`: política de versões, origens e hashes.
 - `HARDWARE-PROFILES.md`: matriz separada para i30 e tablet DATEN.
+- `TOUCH-AND-KEYBOARD.md`: arquitetura do teclado virtual e compatibilidade touch.
 
 ## Build de desenvolvimento
 
