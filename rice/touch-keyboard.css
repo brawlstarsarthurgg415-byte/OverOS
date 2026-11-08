@@ -1,0 +1,21 @@
+/* On-screen keyboard and touch-first controls */
+.overos-keyboard {
+  background: alpha(@os_bg, 0.98);
+  border: 1px solid @os_border;
+  border-radius: 20px 20px 0 0;
+  padding: 10px;
+  min-height: 220px;
+}
+.overos-keyboard-row { min-height: 48px; margin: 3px 0; }
+button.overos-key {
+  min-width: 36px; min-height: 48px; padding: 6px 8px;
+  border-radius: 10px; border: 1px solid @os_border;
+  background: @os_surface_alt; color: @os_text;
+  font-size: 15px; font-weight: 600;
+}
+button.overos-key:active, button.overos-key:checked {
+  background: @os_accent_soft; border-color: @os_accent; color: @os_accent;
+}
+button.overos-key.utility { background: @os_surface; color: @os_accent; }
+.overos-touch button, .overos-touch entry, .overos-touch textview,
+.overos-touch dropdown, .overos-touch spinbutton { min-height: 48px; }
