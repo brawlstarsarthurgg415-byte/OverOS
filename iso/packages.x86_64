@@ -1,0 +1,12 @@
+# Wayland desktop candidates; GPU compatibility still requires hardware testing.
+sway
+waybar
+wofi
+foot
+xdg-desktop-portal
+xdg-desktop-portal-wlr
+mesa
+vulkan-icd-loader
+networkmanager
+noto-fonts
+noto-fonts-emoji
