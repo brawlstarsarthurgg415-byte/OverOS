@@ -6,6 +6,7 @@ on:
     paths:
       - "core/**"
       - "scripts/build-core.sh"
+      - "scripts/stage-rootfs.sh"
       - ".github/workflows/build-core.yml"
   workflow_dispatch:
 
@@ -24,10 +25,20 @@ jobs:
           sudo apt-get install -y --no-install-recommends build-essential cmake
       - name: Configure and compile
         run: bash scripts/build-core.sh
+      - name: Assemble development rootfs staging tree
+        run: bash scripts/stage-rootfs.sh
       - name: Upload native binaries
         uses: actions/upload-artifact@v4
         with:
           name: OverOS-native-core-${{ github.sha }}
           path: out/core-build/overos-*
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload rootfs staging tree (not bootable)
+        uses: actions/upload-artifact@v4
+        with:
+          name: OverOS-rootfs-staging-${{ github.sha }}
+          path: out/rootfs-staging/
           if-no-files-found: error
           retention-days: 14
