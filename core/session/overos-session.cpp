@@ -8,7 +8,7 @@ void clear_screen() {
     std::cout << "\033[2J\033[H";
 }
 
-void pause() {
+void wait_for_enter() {
     std::cout << "\nPressione Enter para voltar...";
     std::string ignored;
     std::getline(std::cin, ignored);
@@ -64,14 +64,14 @@ int main() {
             } else {
                 std::cout << "Shell ainda nao instalado nesta imagem.\n";
             }
-            pause();
+            wait_for_enter();
         } else if (choice == "3") {
             clear_screen();
             show_header();
             std::cout << "OverOS 0.2 — prototipo de espaco de usuario.\n"
                       << "Construido principalmente com C e C++.\n"
                       << "Nenhuma instalacao em disco e realizada.\n";
-            pause();
+            wait_for_enter();
         } else if (choice == "0") {
             return 0;
         }
