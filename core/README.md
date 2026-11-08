@@ -21,7 +21,7 @@ Este diretório inicia a implementação nativa do OverOS. O objetivo é constru
 
 ## Código inicial e staging
 
-O CI agora compila os programas, executa os testes CTest e prepara uma árvore temporária em `out/rootfs-staging/`. Essa árvore contém somente os programas nativos e metadados de identificação. Ela **não é inicializável** e não deve ser gravada em um pendrive.
+O workflow de CI foi configurado para compilar os programas, executar os testes CTest e preparar uma árvore temporária em `out/rootfs-staging/`. Essa árvore contém somente os programas nativos e metadados de identificação. Ela **não é inicializável** e não deve ser gravada em um pendrive.
 
 ## Código inicial
 
