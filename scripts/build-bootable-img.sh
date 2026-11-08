@@ -120,6 +120,7 @@ cat > "$MNT/etc/systemd/system/serial-getty@ttyS0.service.d/autologin.conf" <<'E
 ExecStart=
 ExecStart=-/sbin/agetty --autologin overos --keep-baud 115200,38400,9600 %I $TERM
 EOF
+install -d -o overos -g overos "$MNT/home/overos"
 cat > "$MNT/home/overos/.xinitrc" <<'EOF'
 #!/bin/sh
 if command -v overos-desktop >/dev/null 2>&1; then overos-desktop & fi
