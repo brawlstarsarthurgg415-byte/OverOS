@@ -11,10 +11,13 @@ fail() { printf 'ERRO: %s\n' "$1" >&2; exit 1; }
 [ -x "$ROOTFS/usr/sbin/overos-supervisor" ] || fail "overos-supervisor ausente"
 [ -x "$ROOTFS/usr/bin/overos-hardware-info" ] || fail "inventario de hardware ausente"
 [ -x "$ROOTFS/usr/bin/overosctl" ] || fail "overosctl ausente"
+if [ -x "$ROOT/out/core-build/overos-desktop" ]; then
+  [ -x "$ROOTFS/usr/bin/overos-desktop" ] || fail "desktop compilado nao foi incluido no staging"
+fi
 [ -L "$ROOTFS/bin" ] || fail "link /bin ausente"
 [ -L "$ROOTFS/sbin" ] || fail "link /sbin ausente"
 grep -q '^ID=overos$' "$ROOTFS/etc/os-release" || fail "os-release incorreto"
 grep -q 'not a bootable operating system' "$ROOTFS/usr/share/overos/BUILD-MANIFEST.txt" || fail "manifesto nao identifica staging como nao inicializavel"
 
-printf 'Staging rootfs validado: cinco binarios, metadados e links de compatibilidade.\n'
+printf 'Staging rootfs validado: binarios obrigatorios, desktop GTK4 opcional, metadados e links de compatibilidade.\n'
 printf 'Este artefato continua sendo somente uma arvore de desenvolvimento, nao um SO bootavel.\n'
