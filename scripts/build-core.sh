@@ -12,4 +12,5 @@ done
 
 cmake -S "$ROOT/core" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release
 cmake --build "$BUILD_DIR" --parallel
+ctest --test-dir "$BUILD_DIR" --output-on-failure
 printf '\nBuild concluido. Binarios em: %s\n' "$BUILD_DIR"
