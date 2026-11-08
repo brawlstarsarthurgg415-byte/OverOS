@@ -1,0 +1,23 @@
+# OverOS starter session — Sway/Wayland
+# This is a candidate configuration, not proof of support for every GPU.
+set $mod Mod4
+font pango:Noto Sans 10
+
+# Neutral dark background and readable terminal-first fallback.
+output * bg #0b1018 solid_color
+
+# Launch terminal and application launcher.
+bindsym $mod+Return exec foot
+bindsym $mod+d exec wofi --show drun
+bindsym $mod+Shift+e exec swaymsg exit
+
+# Basic window controls.
+floating_modifier $mod
+bindsym $mod+q kill
+bindsym $mod+f fullscreen toggle
+bindsym $mod+Shift+c reload
+
+# Keep the initial session deliberately simple.
+default_border pixel 2
+gaps inner 6
+gaps outer 4
