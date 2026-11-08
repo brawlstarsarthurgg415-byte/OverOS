@@ -21,6 +21,13 @@ install -m 0755 "$BUILD_DIR/overos-supervisor" "$ROOTFS/usr/sbin/overos-supervis
 install -m 0755 "$BUILD_DIR/overos-hardware-info" "$ROOTFS/usr/bin/overos-hardware-info"
 install -m 0755 "$BUILD_DIR/overosctl" "$ROOTFS/usr/bin/overosctl"
 
+if [ -x "$BUILD_DIR/overos-desktop" ]; then
+  install -m 0755 "$BUILD_DIR/overos-desktop" "$ROOTFS/usr/bin/overos-desktop"
+  echo "GTK4 desktop included in staging tree."
+else
+  echo "GTK4 desktop not built; staging remains console-only."
+fi
+
 install -m 0644 "$ROOT/core/tests/services.conf.example" "$ROOTFS/etc/overos/services.conf.example"
 ln -s usr/bin "$ROOTFS/bin"
 ln -s usr/sbin "$ROOTFS/sbin"
@@ -42,7 +49,7 @@ cat > "$ROOTFS/usr/share/overos/BUILD-MANIFEST.txt" <<EOF
 OverOS staged core root filesystem
 Build timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 Source branch: overos-custom-core
-Contents: init prototype, console session, supervisor prototype, hardware inventory, overosctl
+Contents: init prototype, console session, supervisor prototype, hardware inventory, overosctl, optional GTK4 desktop
 Status: INCOMPLETE — no kernel, libc, shell, drivers, bootloader or package database
 This staging tree is not a bootable operating system.
 EOF
