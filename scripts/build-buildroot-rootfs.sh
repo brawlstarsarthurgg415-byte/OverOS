@@ -92,6 +92,11 @@ cmake -S "$FASTFETCH_SOURCE" -B "$OUT/fastfetch-target-build" \
 cmake --build "$OUT/fastfetch-target-build" --parallel "$(nproc)"
 DESTDIR="$OVERLAY" cmake --install "$OUT/fastfetch-target-build"
 
+# Produce the first native OverVault package from the exact Fastfetch binary
+# installed into this OverOS rootfs overlay.
+OVEROS_OVERLAY="$OVERLAY" OVERVAULT_OUTPUT="$OUT/overvault/x86_64" \\
+  bash "$ROOT/overvault/tools/build-fastfetch-package.sh"
+
 install -d "$OVERLAY/usr/bin" "$OVERLAY/usr/sbin"
 for binary in overos-hardware-info overosctl; do
   install -m 0755 "$OUT/core-target-build/$binary" "$OVERLAY/usr/bin/$binary"
