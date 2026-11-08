@@ -3,7 +3,7 @@ set -Eeuo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${BUILD_DIR:-$ROOT/out/core-build}"
 
-for tool in cmake c++; do
+for tool in cmake cc c++; do
   command -v "$tool" >/dev/null 2>&1 || {
     printf 'ERRO: ferramenta ausente: %s\n' "$tool" >&2
     exit 1
