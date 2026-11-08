@@ -36,7 +36,7 @@ void show_system_info() {
     std::cout << "Kernel: " << "consulte /proc/sys/kernel/osrelease\n";
     std::cout << "Memoria: consulte /proc/meminfo\n";
     std::cout << "\nEsta sessao ainda nao inicia servicos graficos.\n";
-    pause();
+    wait_for_enter();
 }
 }
 
