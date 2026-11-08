@@ -10,6 +10,6 @@ KbdInteractiveAuthentication no
 UsePAM no
 AuthorizedKeysFile .ssh/authorized_keys
 Subsystem sftp /usr/libexec/sftp-server
-AllowTcpForwarding yes
+AllowTcpForwarding no
 X11Forwarding no
 PrintMotd yes
