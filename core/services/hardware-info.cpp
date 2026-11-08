@@ -78,7 +78,7 @@ static void print_input_devices() {
     unsigned int count = 0;
     while (std::getline(input, line)) {
         if (line.rfind("N: Name=", 0) == 0) {
-            std::cout << "input_device: " << line.substr(9) << '\n';
+            std::cout << "input_device: " << line.substr(8) << '\n';
             ++count;
         }
     }
