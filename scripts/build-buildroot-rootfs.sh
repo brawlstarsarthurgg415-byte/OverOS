@@ -20,6 +20,9 @@ if [ ! -d "$SOURCE" ]; then
   tar -xJf "$ARCHIVE" -C "$OUT"
 fi
 
+# Buildroot resolves overlay paths from its own source directory.
+rm -rf "$SOURCE/board/overos-rootfs-overlay"
+cp -a "$ROOT/board/overos/rootfs-overlay" "$SOURCE/board/overos-rootfs-overlay"
 make -C "$SOURCE" O="$BUILD" defconfig BR2_DEFCONFIG="$ROOT/buildroot/overos_x86_64_defconfig"
 make -C "$SOURCE" O="$BUILD" -j"$(nproc)"
 
