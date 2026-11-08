@@ -11,7 +11,8 @@
 - Desenvolver serviços e ferramentas principalmente em C e C++.
 - Integrar Pacman/libalpm como gerenciador de pacotes planejado, sem transformar o OverOS em Arch Linux.
 - Oferecer uma interface visual moderna, com perfil leve e fallback de console.
-- Inicializar por USB, com persistência, sem instalador e sem modificar o disco interno.
+- Inicializar primeiro por USB, com persistência, sem instalador e sem modificar o disco interno.
+- Avaliar dual boot opcional com Windows 10 somente depois de validar boot, Secure Boot, backup e recuperação; ver `core/DUAL-BOOT-WINDOWS.md`.
 - Manter Secure Boot habilitado nos equipamentos que serão testados com ele.
 
 ## Arquitetura
@@ -43,6 +44,7 @@ O uso de uma distribuição Linux como máquina hospedeira de desenvolvimento n�
 - [ ] Pacman/libalpm compilados e integrados.
 - [ ] Interface gráfica funcional.
 - [ ] Imagem USB inicializável, assinada e testada.
+- [ ] Dual boot opcional com Windows 10 projetado, testado e reversível (bloqueado até concluir os critérios de `core/DUAL-BOOT-WINDOWS.md`).
 
 ## Pastas importantes
 
