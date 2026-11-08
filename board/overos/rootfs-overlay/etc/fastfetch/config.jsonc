@@ -1,0 +1,9 @@
+{
+  "logo": {
+    "type": "file",
+    "source": "/usr/share/fastfetch/logos/overos.txt",
+    "padding": { "top": 1, "right": 3 }
+  },
+  "display": { "separator": " : " },
+  "modules": ["title", "separator", "os", "host", "kernel", "uptime", "shell", "cpu", "gpu", "memory"]
+}
