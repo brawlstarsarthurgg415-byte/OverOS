@@ -71,7 +71,7 @@ trap 'cleanup_chroot; sudo_cleanup' EXIT
 chroot "$MNT" /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get update
 chroot "$MNT" /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
   linux-image-amd64 systemd-sysv systemd-timesyncd network-manager sudo \
-  bash coreutils util-linux procps iproute2 iputils-ping ca-certificates locales \
+  bash coreutils util-linux procps iproute2 iputils-ping ca-certificates locales fastfetch \
   openssh-server libgtk-4-1 xserver-xorg-core xserver-xorg-input-libinput \
   xserver-xorg-video-fbdev xserver-xorg-video-vesa xinit openbox tint2 xterm
 chroot "$MNT" /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get clean
@@ -90,6 +90,10 @@ if [ -x "$OUT/core-build/overos-desktop" ]; then
   install -m 0755 "$OUT/core-build/overos-desktop" "$MNT/usr/local/bin/overos-desktop"
 fi
 install -m 0644 "$ROOT/core/tests/services.conf.example" "$MNT/usr/share/overos/services.conf.example"
+# Use upstream Fastfetch unchanged; OverOS only supplies its logo and default profile.
+install -d "$MNT/usr/share/fastfetch/logos" "$MNT/etc/fastfetch"
+install -m 0644 "$ROOT/rice/fastfetch/overos.txt" "$MNT/usr/share/fastfetch/logos/overos.txt"
+install -m 0644 "$ROOT/rice/fastfetch/config.jsonc" "$MNT/etc/fastfetch/config.jsonc"
 
 cat > "$MNT/etc/os-release" <<'EOF'
 NAME="OverOS Custom"
