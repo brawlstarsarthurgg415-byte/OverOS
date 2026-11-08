@@ -10,7 +10,8 @@ CacheDir = /var/cache/pacman/pkg/
 LogFile = /var/log/pacman.log
 GPGDir = /etc/pacman.d/gnupg/
 SigLevel = Required DatabaseRequired
-LocalFileSigLevel = Required
+# Development packages are unsigned until the OverVault signing key is deployed.
+LocalFileSigLevel = Optional
 
 [overvault]
 SigLevel = Required DatabaseRequired
