@@ -46,6 +46,7 @@ jobs:
           path: |
             out/buildroot-dl
             out/buildroot-ccache
+            out/buildroot-2025.02.tar.xz
           key: overos-buildroot-${{ runner.os }}-2025.02-${{ hashFiles('buildroot/overos_x86_64_defconfig') }}
           restore-keys: |
             overos-buildroot-${{ runner.os }}-2025.02-
