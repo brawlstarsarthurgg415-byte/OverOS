@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: overos-iso-${{ github.ref }}
@@ -35,7 +35,20 @@ jobs:
       - name: Build ISO
         run: bash scripts/build-iso.sh
 
-      - name: Upload ISO
+      - name: Publish GitHub Release with ISO
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: overos-build-${{ github.run_number }}
+          name: OverOS Build ${{ github.run_number }}
+          body: |
+            Build automático do OverOS baseado em Arch Linux.
+            ISO gerada pelo GitHub Actions. Versão de teste; compatibilidade de hardware ainda precisa ser verificada.
+          prerelease: true
+          generate_release_notes: true
+          files: out/*.iso
+          fail_on_unmatched_files: true
+
+      - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
           name: OverOS-ISO-${{ github.sha }}
