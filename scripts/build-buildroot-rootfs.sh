@@ -13,9 +13,17 @@ BUILD="$OUT/buildroot-output"
 OVERLAY="$SOURCE/board/overos-rootfs-overlay"
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "Missing build tool: $1" >&2; exit 1; }; }
-for tool in curl tar make gcc g++ cmake git perl python3 cpio rsync bc bison flex; do need "$tool"; done
+for tool in curl tar make gcc g++ cmake git perl python3 cpio rsync bc bison flex ccache; do need "$tool"; done
 
 mkdir -p "$OUT"
+
+# Keep downloaded source archives and compiler objects outside the Buildroot
+# output tree so GitHub Actions can cache them between independent runners.
+export BR2_DL_DIR="$OUT/buildroot-dl"
+export BR2_CCACHE_DIR="$OUT/buildroot-ccache"
+mkdir -p "$BR2_DL_DIR" "$BR2_CCACHE_DIR"
+ccache --set-config=max_size=5G
+
 if [ ! -d "$SOURCE" ]; then
   curl -fL --retry 3 "https://buildroot.org/downloads/buildroot-$VERSION.tar.xz" -o "$ARCHIVE"
   tar -xJf "$ARCHIVE" -C "$OUT"
