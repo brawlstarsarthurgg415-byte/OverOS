@@ -1,0 +1,6 @@
+NAME="OverOS"
+PRETTY_NAME="OverOS Custom"
+ID=overos
+VERSION="0.1.0-dev"
+VERSION_ID="0.1.0"
+HOME_URL="https://github.com/brawlstarsarthurgg415-byte/OverOS"
