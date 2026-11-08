@@ -6,6 +6,7 @@ on:
     paths:
       - "core/**"
       - "scripts/build-core.sh"
+      - "scripts/check-build-host.sh"
       - "scripts/stage-rootfs.sh"
       - "scripts/test-rootfs-staging.sh"
       - ".github/workflows/build-core.yml"
@@ -24,6 +25,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends build-essential cmake
+      - name: Check build host prerequisites
+        run: bash scripts/check-build-host.sh
       - name: Configure and compile
         run: bash scripts/build-core.sh
       - name: Assemble development rootfs staging tree
