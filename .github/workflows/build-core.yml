@@ -5,11 +5,11 @@ on:
     branches: [overos-custom-core]
     paths:
       - "core/**"
-      - "rice/**"
+      - "rice/**"\n      - "buildroot/**"\n      - "board/**"
       - "scripts/build-core.sh"
       - "scripts/check-build-host.sh"
       - "scripts/stage-rootfs.sh"
-      - "scripts/build-bootable-img.sh"
+      - "scripts/build-bootable-img.sh"\n      - "scripts/build-buildroot-rootfs.sh"
       - "scripts/test-rootfs-staging.sh"
       - "scripts/test-touch-assets.sh"
       - "scripts/check-touchscreen.sh"
