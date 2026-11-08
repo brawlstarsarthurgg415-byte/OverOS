@@ -160,7 +160,7 @@ DBPath = /var/lib/pacman/
 CacheDir = /var/cache/pacman/pkg/
 LogFile = /var/log/pacman.log
 GPGDir = /etc/pacman.d/gnupg/
-SigLevel = Optional DatabaseOptional
+SigLevel = Required DatabaseOptional
 LocalFileSigLevel = Optional
 # No Arch Linux repositories are configured: their binary packages target
 # glibc and must not be installed on the musl-based OverOS.
