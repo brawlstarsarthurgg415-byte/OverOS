@@ -66,6 +66,7 @@ int main(int argc, char** argv) {
     if (command == "hardware") {
         const char* executable = "/usr/bin/overos-hardware-info";
         if (access(executable, X_OK) != 0) executable = "./overos-hardware-info";
+        execlp("overos-hardware-info", "overos-hardware-info", static_cast<char*>(nullptr));
         execl(executable, executable, static_cast<char*>(nullptr));
         std::cerr << "Nao foi possivel iniciar overos-hardware-info.\n";
         return 127;
