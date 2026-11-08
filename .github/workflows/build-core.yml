@@ -50,6 +50,11 @@ jobs:
           key: overos-buildroot-${{ runner.os }}-2025.02-${{ hashFiles('buildroot/overos_x86_64_defconfig') }}
           restore-keys: |
             overos-buildroot-${{ runner.os }}-2025.02-
+      - name: Validate Buildroot C++ and cache configuration
+        run: |
+          grep -qx 'BR2_TOOLCHAIN_BUILDROOT_CXX=y' buildroot/overos_x86_64_defconfig
+          grep -qx 'BR2_CCACHE=y' buildroot/overos_x86_64_defconfig
+          bash -n scripts/build-buildroot-rootfs.sh scripts/build-bootable-img.sh
       - name: Check build host prerequisites
         run: bash scripts/check-build-host.sh
       - name: Validate touch and virtual keyboard assets
