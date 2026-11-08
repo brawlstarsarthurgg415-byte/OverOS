@@ -8,4 +8,8 @@ if ! command -v openbox-session >/dev/null 2>&1; then
     echo "OverOS: Openbox nao esta disponivel."
     exit 1
 fi
-exec startx /usr/bin/openbox-session -- :0 -nolisten tcp
+if [ -x /usr/bin/Xfbdev ]; then
+    exec startx /usr/bin/openbox-session -- /usr/bin/Xfbdev :0 -nolisten tcp
+fi
+echo "OverOS: servidor Xfbdev nao encontrado; fallback para terminal."
+exit 1
