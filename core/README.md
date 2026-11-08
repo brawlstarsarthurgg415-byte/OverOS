@@ -38,6 +38,10 @@ O plano técnico de boot, UEFI, Secure Boot, imagem externa e critérios de test
 
 A política de confiança, assinatura, proteção das chaves e testes está em [`SECURE-BOOT.md`](SECURE-BOOT.md). O preflight de ferramentas é somente leitura: `bash scripts/check-secure-boot-tools.sh`. Isso não instala ferramentas, não cria chaves e não ativa Secure Boot no hardware.
 
+## Interface inicial GTK4
+
+Foi adicionado o protótipo nativo `overos-desktop` em C++20/GTK4. A tela inicial possui um botão **Personalizar interface**, que abre o editor para cor de destaque, escala, alto contraste e redução de animações; as preferências são salvas no diretório de configuração do usuário. O alvo é opcional: builds sem GTK4 continuam com o console. O protótipo ainda não está conectado a um compositor/display manager, não inicia automaticamente no boot e depende das bibliotecas GTK4 no sistema de execução. Não declarar sessão gráfica completa até integrar compositor, login e entrada touch real.
+
 ## Próximas etapas
 
 - `BOOTSTRAP-ROADMAP.md`: sequência de construção e critérios de aceite.
