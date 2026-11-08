@@ -1,6 +1,7 @@
-# OverVault client configuration template.
-# Copy into /etc/pacman.conf only after the official signing key is installed
-# and the repository hosting endpoint is configured.
+# OverVault client configuration template for OverOS x86_64 + musl.
+# The same repository endpoint is installed into /etc/pacman.conf at build time.
+# Remote installs become available after GitHub Pages hosting and the trusted
+# OverVault signing key are deployed.
 
 [options]
 Architecture = x86_64
@@ -13,5 +14,4 @@ LocalFileSigLevel = Required
 
 [overvault]
 SigLevel = Required DatabaseRequired
-# Enable only after OverVault hosting is deployed and HTTPS is verified:
-# Server = https://YOUR-VERIFIED-OVEROS-PACKAGE-HOST/overvault/$arch
+Server = https://brawlstarsarthurgg415-byte.github.io/OverOS/overvault/$arch
