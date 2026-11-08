@@ -91,7 +91,7 @@ Init: BusyBox init
 Desktop: Xfbdev + Openbox + xterm (console fallback)
 Network: NetworkManager + nmtui + WPA supplicant
 Remote access: OpenSSH server
-Packages: Specman 0.1.0 local package manager (SHA-256 required)
+Packages: Pacman/libalpm 7.0.0 for local OverOS packages; Specman MVP
 System info: upstream Fastfetch with OverOS logo/configuration
 Buildroot version: 2025.02
 This is an early development image, not a production-ready OS.
