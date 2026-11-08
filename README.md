@@ -1,53 +1,64 @@
 # OverOS
 
-**OverOS** é um projeto independente de sistema Linux com base Arch, identidade visual própria e foco em uma experiência moderna, rápida e configurável.
+**OverOS** é um projeto de sistema operacional Linux independente, com espaço de usuário próprio, identidade visual própria e foco em funcionar em computadores diferentes, inclusive hardware antigo.
 
-> Este repositório é a edição normal do OverOS. Ele é separado do projeto `overOS-light`.
+> Este repositório é o projeto OverOS normal. Ele é separado do projeto `overOS-light`.
 
-## Objetivos
+## Objetivo do sistema
 
-- Interface visual moderna, limpa e consistente.
-- Baixo consumo de RAM e inicialização enxuta.
-- Componentes modulares: ambiente gráfico, shell, tema e serviços podem ser trocados sem refazer o sistema.
-- Compatibilidade testada por perfil de hardware, sem prometer suporte a GPUs antigas antes dos testes.
-- Instalação reproduzível e documentação em português.
+- Construir um root filesystem próprio a partir de componentes individuais.
+- Não usar uma imagem pronta de Debian, Arch ou Ubuntu como sistema final.
+- Desenvolver serviços e ferramentas principalmente em C e C++.
+- Integrar Pacman/libalpm como gerenciador de pacotes planejado, sem transformar o OverOS em Arch Linux.
+- Oferecer uma interface visual moderna, com perfil leve e fallback de console.
+- Inicializar por USB, com persistência, sem instalador e sem modificar o disco interno.
+- Manter Secure Boot habilitado nos equipamentos que serão testados com ele.
 
-## Direção visual
+## Arquitetura
 
-A primeira direção será um desktop escuro, elegante e tridimensional, com transparência discreta, painéis compactos, cantos suaves e animações moderadas. O visual não deve depender de efeitos pesados para parecer bom.
+- Kernel Linux e drivers selecionados para o hardware confirmado.
+- Toolchain e sysroot próprios para a arquitetura alvo.
+- libc, shell, utilitários e serviços montados como componentes separados.
+- Init e ferramentas nativas do OverOS.
+- Pacotes assinados e repositório próprio.
+- Sessão gráfica modular, com perfil touchscreen e fallback para hardware legado.
 
-## Arquitetura em avaliação
+O uso de uma distribuição Linux como máquina hospedeira de desenvolvimento não significa que ela será a base do sistema final.
 
-- **Base:** Arch Linux, com seleção mínima de pacotes.
-- **Sessão gráfica:** Wayland é a direção preferida; o compositor será escolhido após validar drivers e GPU.
-- **Shell/widgets:** Astal será avaliado como opção visual, não tratado como compositor.
-- **Plano de compatibilidade:** perfis separados para hardware atual e hardware legado.
-- **Xorg:** não faz parte da direção principal do projeto.
+## Estado real do desenvolvimento
 
-Nenhuma dessas escolhas será considerada pronta até passar por testes reais de inicialização, vídeo, entrada, memória e estabilidade.
+<badge color="warning">Prototipagem inicial</badge>
 
-## Estado atual
+- [x] Branch de desenvolvimento isolada: `overos-custom-core`.
+- [x] Primeiros programas nativos em C e C++.
+- [x] Compilação CMake e testes CTest configurados.
+- [x] Arquitetura inicial de rootfs, toolchain, pacotes e USB documentada.
+- [x] Biblioteca de componentes visuais e perfil touch documentados.
+- [ ] Build validado pelo CI e testes automatizados aprovados.
+- [ ] Toolchain/sysroot independente.
+- [ ] Kernel e drivers compilados para cada perfil.
+- [ ] libc e utilitários-base integrados.
+- [ ] Init de produção e supervisão de serviços.
+- [ ] Pacman/libalpm compilados e integrados.
+- [ ] Interface gráfica funcional.
+- [ ] Imagem USB inicializável, assinada e testada.
 
-<badge>Em planejamento e prototipagem</badge>
+## Pastas importantes
 
-- [x] Repositório independente criado.
-- [x] Objetivos e critérios técnicos iniciais documentados.
-- [ ] Inventário de hardware e matriz de compatibilidade.
-- [ ] Escolha e protótipo do compositor.
-- [ ] Protótipo visual do shell.
-- [ ] Imagem inicializável e testes em máquinas reais.
+- `core/`: programas nativos, arquitetura do rootfs e toolchain.
+- `rice/`: identidade visual e componentes de interface.
+- `docs/`: decisões técnicas e inventário de hardware.
+- `scripts/`: automação de build.
+- `iso/`: perfil antigo baseado em Archiso, mantido apenas como referência histórica e não como base do OverOS independente.
 
-## Estrutura
+## Hardware alvo
 
-- `docs/`: arquitetura, decisões técnicas e testes.
-- `rice/`: identidade visual, tema e protótipo do desktop.
-- `config/`: configurações versionadas dos componentes.
-- `scripts/`: automação de desenvolvimento e montagem.
+O Intelbras i30 é um alvo legado experimental. A GPU SiS Mirage 3+ ainda não foi confirmada. O tablet DATEN será testado por USB, preservando o Windows e mantendo Secure Boot ativado. Modelo, CPU, RAM, arquitetura UEFI, GPU e Wi-Fi precisam ser identificados antes de prometer compatibilidade.
 
-## Aviso de compatibilidade
+## Segurança
 
-O computador Intelbras i30 é tratado como um alvo legado experimental. A GPU SiS Mirage 3+ ainda é uma hipótese, não uma identificação confirmada. Wayland, Astal e aceleração gráfica não serão declarados compatíveis até haver teste no equipamento.
+Nenhum script de build deve selecionar ou formatar discos físicos automaticamente. O criador de imagem deverá produzir primeiro um arquivo de imagem e manter a gravação em pendrive como etapa separada e explicitamente escolhida.
 
-## Licença
+## Aviso
 
-A licença será definida antes da primeira distribuição pública.
+O projeto ainda não é um sistema operacional pronto para uso diário. Os programas atuais são protótipos de espaço de usuário; o init ainda não deve ser usado como PID 1 em uma máquina real. Consulte `core/BUILDING.md` e `core/ROOTFS-LAYOUT.md`.
