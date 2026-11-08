@@ -16,7 +16,7 @@ Na raiz do repositório:
 bash scripts/build-core.sh
 ```
 
-Os binários ficam em `out/core-build/`.
+Os binários ficam em `out/core-build/`. O script também executa os testes CTest.\n\nPara organizar os binários em uma árvore de rootfs temporária (ainda não inicializável):\n\n```sh\nbash scripts/stage-rootfs.sh\n```\n\nO resultado fica em `out/rootfs-staging/`.
 
 ## Componentes
 
