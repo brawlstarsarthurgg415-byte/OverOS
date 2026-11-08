@@ -34,7 +34,8 @@ O uso de uma distribuição Linux como máquina hospedeira de desenvolvimento n�
 - [x] Compilação CMake e testes CTest configurados.
 - [x] Arquitetura inicial de rootfs, toolchain, pacotes e USB documentada.
 - [x] Biblioteca de componentes visuais e perfil touch documentados.
-- [ ] Build validado pelo CI e testes automatizados aprovados.
+- [x] Script de inventário touchscreen Linux somente leitura.
+- [ ] Build validado pelo CI e testes automatizados aprovados para o HEAD atual.
 - [ ] Toolchain/sysroot independente.
 - [ ] Kernel e drivers compilados para cada perfil.
 - [ ] libc e utilitários-base integrados.
@@ -48,12 +49,14 @@ O uso de uma distribuição Linux como máquina hospedeira de desenvolvimento n�
 - `core/`: programas nativos, arquitetura do rootfs e toolchain.
 - `rice/`: identidade visual e componentes de interface.
 - `docs/`: decisões técnicas e inventário de hardware.
-- `scripts/`: automação de build.
+- `scripts/`: automação de build e diagnóstico.
 - `iso/`: perfil antigo baseado em Archiso, mantido apenas como referência histórica e não como base do OverOS independente.
 
 ## Hardware alvo
 
-O Intelbras i30 é um alvo legado experimental. A GPU SiS Mirage 3+ ainda não foi confirmada. O tablet DATEN será testado por USB, preservando o Windows e mantendo Secure Boot ativado. Modelo, CPU, RAM, arquitetura UEFI, GPU e Wi-Fi precisam ser identificados antes de prometer compatibilidade.
+O Intelbras i30 é um alvo legado experimental. A GPU SiS Mirage 3+ ainda não foi confirmada. O tablet DATEN será testado por USB, preservando o Windows e mantendo Secure Boot ativado. Modelo, CPU, RAM, arquitetura UEFI, GPU, controlador touchscreen e Wi-Fi precisam ser identificados antes de prometer compatibilidade.
+
+Para inventariar a entrada em um Linux iniciado no equipamento, execute `bash scripts/check-touchscreen.sh`. O script não instala drivers nem altera o dispositivo; consulte `core/TOUCHSCREEN-DIAGNOSTICS.md`.
 
 ## Segurança
 
