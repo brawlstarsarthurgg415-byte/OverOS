@@ -107,7 +107,9 @@ cat > "$MNT/etc/hosts" <<'EOF'
 ::1 localhost ip6-localhost ip6-loopback
 EOF
 
-# Ensure all optional desktop/network groups exist in the minimal bootstrap.\nfor group in audio video plugdev netdev; do chroot "$MNT" groupadd --force "$group"; done\nchroot "$MNT" useradd --create-home --shell /bin/bash --groups sudo,audio,video,plugdev,netdev overos
+# Ensure all optional desktop/network groups exist in the minimal bootstrap.
+for group in audio video plugdev netdev; do chroot "$MNT" groupadd --force "$group"; done
+chroot "$MNT" useradd --create-home --shell /bin/bash --groups sudo,audio,video,plugdev,netdev overos
 # Development image: no password is set; local console autologin is intentional.
 install -d "$MNT/etc/systemd/system/getty@tty1.service.d" "$MNT/etc/systemd/system/serial-getty@ttyS0.service.d"
 cat > "$MNT/etc/systemd/system/getty@tty1.service.d/autologin.conf" <<'EOF'
