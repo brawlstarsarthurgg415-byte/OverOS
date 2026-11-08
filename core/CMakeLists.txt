@@ -22,7 +22,11 @@ target_compile_options(overos-session PRIVATE -Wall -Wextra -Wpedantic)
 add_executable(overosctl tools/overosctl.cpp)
 target_compile_options(overosctl PRIVATE -Wall -Wextra -Wpedantic)
 
-install(TARGETS overos-init overos-hardware-info overos-session overosctl
+install(TARGETS overos-init
+  RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
+install(TARGETS overos-session
+  RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
+install(TARGETS overos-hardware-info overosctl
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 if(BUILD_TESTING)
