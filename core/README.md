@@ -30,6 +30,10 @@ O workflow de CI foi configurado para compilar os programas, executar os testes 
 - `services/overos-supervisor.cpp`: supervisor experimental com validação de configuração e reinício básico de processos.
 - `CMakeLists.txt`: build nativo dos componentes iniciais.
 
+## Boot USB prioritário
+
+O plano técnico de boot, UEFI, Secure Boot, imagem externa e critérios de teste está em [`BOOT-IMPLEMENTATION-PLAN.md`](BOOT-IMPLEMENTATION-PLAN.md). Ele separa o boot de laboratório em VM da validação de confiança no firmware real; nenhum deles está concluído ainda.
+
 ## Próximas etapas
 
 - `BOOTSTRAP-ROADMAP.md`: sequência de construção e critérios de aceite.
