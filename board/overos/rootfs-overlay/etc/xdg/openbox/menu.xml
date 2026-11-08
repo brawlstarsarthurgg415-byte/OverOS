@@ -8,9 +8,6 @@
       <action name="Execute"><command>xterm -e nmtui</command></action>
     </item>
     <separator/>
-    <item label="Back to console">
-      <action name="Execute"><command>pkill -TERM X</command></action>
-    </item>
     <item label="Exit">
       <action name="Exit"/>
     </item>
