@@ -39,7 +39,7 @@ jobs:
       - name: Install native build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential ccache cmake libgtk-4-dev curl wget perl python3 cpio rsync bc bison flex file unzip libncurses-dev grub-pc-bin grub-efi-amd64-bin dosfstools parted e2fsprogs mtools qemu-system-x86 zstd
+          sudo apt-get install -y --no-install-recommends build-essential ccache cmake libgtk-4-dev curl wget perl python3 meson ninja-build pkg-config cpio rsync bc bison flex file unzip libncurses-dev grub-pc-bin grub-efi-amd64-bin dosfstools parted e2fsprogs mtools qemu-system-x86 zstd
       - name: Restore Buildroot source and compiler caches
         uses: actions/cache@v4
         with:
