@@ -202,7 +202,21 @@ EOF
 "$NINJA" -C "$PACMAN_BUILD"
 DESTDIR="$OVERLAY" "$MESON" install -C "$PACMAN_BUILD"
 test -x "$OVERLAY/usr/bin/pacman"
-find "$OVERLAY/usr/lib" "$OVERLAY/usr/lib64" -name 'libalpm.so*' -print -quit 2>/dev/null | grep -q .
+# Meson may install libalpm under usr/lib or usr/lib64 depending on the
+# target layout. Only pass directories that actually exist to find; with
+# pipefail, a missing search directory would otherwise fail the whole build.
+LIBALPM_SEARCH_DIRS=()
+for libdir in "$OVERLAY/usr/lib" "$OVERLAY/usr/lib64"; do
+  [ ! -d "$libdir" ] || LIBALPM_SEARCH_DIRS+=("$libdir")
+done
+[ "${#LIBALPM_SEARCH_DIRS[@]}" -gt 0 ] || {
+  echo "Pacman installation created neither usr/lib nor usr/lib64" >&2
+  exit 1
+}
+find "${LIBALPM_SEARCH_DIRS[@]}" -name 'libalpm.so*' -print -quit | grep -q . || {
+  echo "libalpm shared library was not installed into the target overlay" >&2
+  exit 1
+}
 install -d "$OVERLAY/etc"
 cat > "$OVERLAY/etc/pacman.conf" <<'EOF'
 [options]
@@ -212,7 +226,10 @@ CacheDir = /var/cache/pacman/pkg/
 LogFile = /var/log/pacman.log
 GPGDir = /etc/pacman.d/gnupg/
 SigLevel = Required DatabaseRequired
-LocalFileSigLevel = Required
+# Development builds create local packages before the signing key/repository
+# deployment exists. Accept unsigned local files for now; if a signature is
+# present, Pacman still verifies it. Remote OverVault remains signature-required.
+LocalFileSigLevel = Optional
 
 # Official OverVault repository endpoint. The hosting workflow and trusted
 # public signing key must be deployed before remote installs can succeed.
