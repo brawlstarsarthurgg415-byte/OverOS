@@ -20,8 +20,8 @@ mkdir -p "$OUT"
 # Keep downloaded source archives and compiler objects outside the Buildroot
 # output tree so GitHub Actions can cache them between independent runners.
 export BR2_DL_DIR="$OUT/buildroot-dl"
-export BR2_CCACHE_DIR="$OUT/buildroot-ccache"
-mkdir -p "$BR2_DL_DIR" "$BR2_CCACHE_DIR"
+CCACHE_STORE="$OUT/buildroot-ccache"
+mkdir -p "$BR2_DL_DIR" "$CCACHE_STORE"
 ccache --set-config=max_size=5G
 
 if [ ! -d "$SOURCE" ]; then
@@ -39,6 +39,31 @@ chmod 0755 "$OVERLAY/usr/bin/specman" "$OVERLAY/usr/bin/overos-gui"
 
 make -C "$SOURCE" O="$BUILD" defconfig BR2_DEFCONFIG="$ROOT/buildroot/overos_x86_64_defconfig"
 
+# Point Buildroot itself at the directory persisted by GitHub Actions.
+python3 - "$BUILD/.config" "$CCACHE_STORE" <<'PY'
+import pathlib, sys
+config = pathlib.Path(sys.argv[1])
+cache_dir = sys.argv[2]
+lines = config.read_text().splitlines()
+entry = 'BR2_CCACHE_DIR="' + cache_dir + '"'
+for i, line in enumerate(lines):
+    if line.startswith("BR2_CCACHE_DIR="):
+        lines[i] = entry
+        break
+else:
+    lines.append(entry)
+config.write_text("\n".join(lines) + "\n")
+PY
+make -C "$SOURCE" O="$BUILD" olddefconfig
+grep -qx 'BR2_TOOLCHAIN_BUILDROOT_CXX=y' "$BUILD/.config" || {
+  echo "Buildroot config did not enable target C++ support" >&2
+  exit 1
+}
+grep -qx 'BR2_CCACHE=y' "$BUILD/.config" || {
+  echo "Buildroot compiler cache is disabled in the effective config" >&2
+  exit 1
+}
+
 # Build the target compiler first, then compile OverOS native programs against
 # the Buildroot sysroot (never against the Ubuntu/Debian host libraries).
 make -C "$SOURCE" O="$BUILD" toolchain host-meson host-ninja
@@ -48,8 +73,16 @@ for candidate in "$TOOLBIN"/*-gcc; do
   if [ -x "$candidate" ]; then CC="$candidate"; break; fi
 done
 [ -n "$CC" ] || { echo "Buildroot target GCC not found in $TOOLBIN" >&2; exit 1; }
-CXX="${CC%gcc}g++"
-[ -x "$CXX" ] || { echo "Buildroot target G++ not found: $CXX" >&2; exit 1; }
+CXX=""
+for candidate in "$TOOLBIN"/*-g++; do
+  if [ -x "$candidate" ]; then CXX="$candidate"; break; fi
+done
+[ -n "$CXX" ] || {
+  echo "Buildroot target G++ not found in $TOOLBIN; inspect $BUILD/.config and toolchain logs" >&2
+  exit 1
+}
+"$CC" -dumpmachine
+"$CXX" -dumpmachine
 SYSROOT="$("$CC" -print-sysroot)"
 [ -d "$SYSROOT" ] || { echo "Buildroot sysroot not found: $SYSROOT" >&2; exit 1; }
 
@@ -102,7 +135,7 @@ DESTDIR="$OVERLAY" cmake --install "$OUT/fastfetch-target-build"
 
 # Produce the first native OverVault package from the exact Fastfetch binary
 # installed into this OverOS rootfs overlay.
-OVEROS_OVERLAY="$OVERLAY" OVERVAULT_OUTPUT="$OUT/overvault/x86_64" \\
+OVEROS_OVERLAY="$OVERLAY" OVERVAULT_OUTPUT="$OUT/overvault/x86_64" \
   bash "$ROOT/overvault/tools/build-fastfetch-package.sh"
 
 install -d "$OVERLAY/usr/bin" "$OVERLAY/usr/sbin"
