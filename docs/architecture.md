@@ -1,51 +1,65 @@
-# Arquitetura inicial do OverOS
+# Arquitetura do OverOS independente
 
 ## Princípios
 
-1. **Hardware primeiro:** identificar CPU, GPU, RAM, firmware e dispositivos antes de fixar a stack gráfica.
-2. **Separação de camadas:** sistema-base, compositor, shell, tema e serviços devem ser independentes.
-3. **Leveza mensurável:** registrar RAM em idle, tempo de boot, uso de CPU/GPU e estabilidade.
-4. **Sem promessas falsas:** uma configuração só passa a ser suportada depois de ser testada.
-5. **Reversibilidade:** manter uma sessão de recuperação em texto e configurações fáceis de restaurar.
+1. **Sistema final próprio:** o rootfs será montado a partir de componentes individuais; não será uma cópia de Debian, Arch ou Ubuntu.
+2. **Host separado do alvo:** uma distribuição Linux pode hospedar o build, mas seus pacotes e seu rootfs não serão usados como sistema final.
+3. **Hardware primeiro:** identificar CPU, GPU, RAM, firmware e dispositivos antes de escolher drivers e sessão gráfica.
+4. **Camadas independentes:** kernel, libc, utilitários, serviços, gerenciador de pacotes, compositor e shell devem ser componentes distintos.
+5. **Leveza mensurável:** medir RAM, tempo de boot, CPU/GPU e estabilidade.
+6. **Recuperação:** manter console de emergência e ferramentas de diagnóstico.
+7. **Reversibilidade:** a imagem USB não deve alterar o disco interno do computador.
 
-## Camadas propostas
+## Camadas alvo
 
-| Camada | Direção inicial | Situação |
+| Camada | Tecnologia/direção | Situação |
 |---|---|---|
-| Base | Arch Linux minimal | Proposta |
-| Init e serviços | systemd com serviços mínimos | A avaliar |
-| Vídeo | Wayland, condicionado ao driver | Não validado |
-| Compositor | Comparar opções leves com suporte real ao hardware | Em pesquisa |
-| Shell | Astal como candidato; alternativas leves também serão medidas | Em pesquisa |
-| Tema | OverOS Dark, próprio | Conceito |
-| Rede | NetworkManager ou configuração mínima por perfil | A avaliar |
-| Recuperação | TTY e ferramentas de diagnóstico | Obrigatório |
+| Kernel | Linux, configurado por perfil de hardware | Não integrado |
+| Toolchain | GCC/binutils ou LLVM, sysroot próprio | Planejado |
+| libc | Seleção após teste de compatibilidade | Em avaliação |
+| Utilitários | Componentes individuais compilados para o sysroot | Não integrado |
+| Init | overos-init em C, atualmente protótipo | Experimental |
+| Serviços | Supervisão, logs, dispositivos e rede | Planejado |
+| Pacotes | Pacman/libalpm e repositório OverOS assinado | Planejado |
+| Sessão | Console nativo com fallback | Protótipo |
+| Gráficos | GTK/Cairo/Pango, SVG, OpenGL ES/Vulkan quando suportado | Planejado |
+| Boot | UEFI USB, cadeia assinada e persistência | Planejado |
 
-## Regra importante sobre Astal
+## Gerenciador de pacotes
 
-Astal é uma ferramenta para criar shell, painéis e widgets. Ele não substitui o compositor Wayland nem fornece, por si só, suporte ao driver da GPU. A compatibilidade depende da sessão gráfica, do compositor, do driver e das bibliotecas usadas.
+Pacman/libalpm é a tecnologia escolhida para gerenciar transações e dependências. Isso não obriga o sistema a usar Arch Linux como rootfs. O OverOS terá seus próprios pacotes, repositórios, seleção de componentes, chaves e processo de build. Consulte [PACKAGE-MANAGER.md](../core/PACKAGE-MANAGER.md).
+
+## Perfil visual
+
+A interface deve ser visualmente consistente e reutilizar componentes próprios. O perfil touchscreen terá áreas de toque maiores; o perfil legado reduzirá animações, transparências e dependências gráficas. O console continua disponível para recuperação.
 
 ## Perfis de hardware
 
 ### Perfil moderno
-Máquinas x86_64 com drivers gráficos funcionais para a stack escolhida. Receberá os efeitos visuais e animações completos.
+
+Máquinas x86_64 com drivers funcionais para o kernel e stack gráfica selecionados. Efeitos visuais serão habilitados conforme a GPU suportar.
 
 ### Perfil legado experimental
-Máquinas antigas, incluindo o Intelbras i30. Deve priorizar renderização simples, poucos processos, baixa memória e uma forma de recuperação. A stack gráfica só será definida após confirmar a GPU e testar o suporte do kernel/driver.
 
-## Critérios para aprovar um compositor
+O Intelbras i30 será tratado como equipamento legado. A GPU SiS Mirage 3+ permanece não confirmada. A seleção do driver, compositor e resolução depende do inventário real e de testes.
 
-- Inicia no hardware-alvo sem falhas.
-- Detecta corretamente monitor e resolução.
-- Teclado, mouse e touchpad funcionam.
-- Não exige uma GPU ou driver ausente no equipamento.
-- Consumo de RAM e CPU medido em sessão ociosa.
-- Recuperação para TTY funcional.
+### Perfil tablet DATEN
 
-## Próximas etapas
+A inicialização deve ocorrer pelo USB, preservar o Windows 10 interno e manter Secure Boot ativado. O modelo exato e a cadeia de confiança do firmware precisam ser confirmados antes de selecionar o carregador UEFI.
 
-1. Registrar o estado inicial do repositório e a lista de hardware-alvo.
-2. Comparar compositores e shells com foco em drivers antigos e memória.
-3. Escolher uma stack principal e uma alternativa de recuperação.
-4. Criar um protótipo visual independente do instalador.
-5. Automatizar testes e só então começar a imagem inicializável.
+## Critérios de aceite
+
+- Compilação reproduzível e testes automatizados aprovados.
+- Boot em máquina virtual antes de testar hardware físico.
+- Console de recuperação funcional.
+- Teclado, touch, vídeo, áudio e rede testados por perfil.
+- Persistência USB testada após reinicialização.
+- Secure Boot mantido habilitado no tablet.
+- Nenhuma alteração no armazenamento interno do tablet.
+
+## Referências de implementação
+
+- [Toolchain e sysroot](../core/TOOLCHAIN.md)
+- [Layout do rootfs](../core/ROOTFS-LAYOUT.md)
+- [Boot USB](../core/BOOT-AND-USB.md)
+- [Build e limitações atuais](../core/BUILDING.md)
