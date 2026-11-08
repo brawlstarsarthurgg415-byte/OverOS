@@ -46,6 +46,8 @@ jobs:
         run: bash scripts/test-rootfs-staging.sh
       - name: Build bootable raw image (BIOS + UEFI)
         run: sudo bash scripts/build-bootable-img.sh
+      - name: Verify generated image exists and is non-empty
+        run: test -s out/OverOS-Custom.img
       - name: Smoke-test boot in QEMU
         shell: bash
         run: |
