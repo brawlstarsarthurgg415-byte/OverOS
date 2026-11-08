@@ -1,14 +1,22 @@
 # Compilar o núcleo inicial
 
-O build compila componentes nativos em C e C++ usando CMake e um compilador C++.
+O núcleo é escrito principalmente em C11 e C++20. A compilação atual usa o compilador do computador hospedeiro; ela ainda não constrói uma toolchain independente nem um sistema inicializável.
 
-## Dependências no computador de desenvolvimento
+## Requisitos do computador de desenvolvimento
 
-- CMake 3.16 ou superior
-- GCC/G++ ou Clang com suporte a C++20
-- Make ou Ninja
+- Linux x86-64 recomendado para o primeiro ciclo de desenvolvimento.
+- CMake 3.16 ou superior.
+- GCC/G++ ou Clang com suporte a C++20.
+- Make ou Ninja.
+- Bash e ferramentas POSIX básicas.
 
-## Compilar
+Confira o ambiente sem instalar nem alterar nada:
+
+```sh
+bash scripts/check-build-host.sh
+```
+
+## Compilar e testar
 
 Na raiz do repositório:
 
@@ -16,26 +24,31 @@ Na raiz do repositório:
 bash scripts/build-core.sh
 ```
 
-Os binários ficam em `out/core-build/`. O script também executa os testes CTest.
+Os binários ficam em `out/core-build/`. O script executa os testes CTest.
 
-Para organizar os binários em uma árvore de rootfs temporária (ainda não inicializável):
+Para organizar os programas em uma árvore temporária:
 
 ```sh
 bash scripts/stage-rootfs.sh
+bash scripts/test-rootfs-staging.sh
 ```
 
-O resultado fica em `out/rootfs-staging/`.
+O resultado fica em `out/rootfs-staging/`. É apenas uma árvore de arquivos para desenvolvimento, **não inicializa e não deve ser gravada em pendrive**.
 
 ## Componentes
 
-- `overos-init`: protótipo de PID 1; instalado em `sbin/`, mas não deve ser usado como init de produção.
+- `overos-init`: protótipo de PID 1; não usar como init de produção.
+- `overos-session`: menu inicial de console.
 - `overos-hardware-info`: inventário de hardware somente leitura.
-- `overos-session`: primeira sessão de console com menu nativo, instalada em `sbin/`.
-- `overosctl` e `overos-hardware-info`: ferramentas de diagnóstico instaladas em `bin/`.
-- `overos-supervisor`: supervisor experimental de serviços, instalado em `sbin/`; ainda não é iniciado pelo PID 1.
+- `overosctl`: ferramenta de diagnóstico.
+- `overos-supervisor`: supervisor experimental; ainda não é iniciado pelo PID 1.
 
-## Aviso
+## Limites e segurança
 
-Ainda não copie `overos-init` para o sistema em execução nem o configure como PID 1 no computador principal. O init ainda não possui gerenciamento completo de sinais, montagem de root real, supervisão de serviços, logs persistentes, tratamento de falhas e desligamento seguro. É um componente em desenvolvimento, não um init de produção.
+- Não copie o protótipo de init para o sistema em execução nem o configure como PID 1.
+- Não execute scripts de imagem em discos internos.
+- O build atual não gera kernel, libc, initramfs, bootloader, Pacman funcional, imagem USB ou cadeia Secure Boot.
+- A arquitetura de destino ainda precisa ser confirmada para cada equipamento.
+- O tablet DATEN deve continuar com Secure Boot ativo e o Windows intacto. Não altere chaves, partições ou configurações de firmware para contornar incompatibilidades.
 
-Esta compilação não gera uma ISO nem grava pendrive. A imagem USB depende da toolchain/rootfs, bootloader UEFI assinado e testes de Secure Boot.
+Consulte `core/BOOTSTRAP-ROADMAP.md` para a sequência completa e os critérios de conclusão.
