@@ -1,0 +1,17 @@
+# OverVault client configuration template.
+# Copy into /etc/pacman.conf only after the official signing key is installed
+# and the repository hosting endpoint is configured.
+
+[options]
+Architecture = x86_64
+DBPath = /var/lib/pacman/
+CacheDir = /var/cache/pacman/pkg/
+LogFile = /var/log/pacman.log
+GPGDir = /etc/pacman.d/gnupg/
+SigLevel = Required DatabaseRequired
+LocalFileSigLevel = Required
+
+[overvault]
+SigLevel = Required DatabaseRequired
+# Enable only after OverVault hosting is deployed and HTTPS is verified:
+# Server = https://YOUR-VERIFIED-OVEROS-PACKAGE-HOST/overvault/$arch
