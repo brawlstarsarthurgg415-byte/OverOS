@@ -22,7 +22,7 @@ Este diretório inicia a implementação nativa do OverOS. O objetivo é constru
 ## Código inicial e staging\n\nO CI agora compila os programas, executa os testes CTest e prepara uma árvore temporária em `out/rootfs-staging/`. Essa árvore contém somente os programas nativos e metadados de identificação. Ela **não é inicializável** e não deve ser gravada em um pendrive.\n\n## Código inicial
 
 - `init/overos-init.c`: primeiro processo do espaço de usuário (PID 1), com montagem básica e fallback para console.
-- `services/hardware-info.cpp`: utilitário C++ para inventário de hardware sem modificar o sistema.
+- `services/hardware-info.cpp`: utilitário C++ para inventário de hardware sem modificar o sistema.\n- `services/overos-supervisor.cpp`: supervisor experimental com validação de configuração e reinício básico de processos.
 - `CMakeLists.txt`: build nativo dos componentes iniciais.
 
 ## Build de desenvolvimento
