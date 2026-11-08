@@ -1,0 +1,3 @@
+# Duplicate services are forbidden.
+/usr/bin/overos-hardware-info
+/usr/bin/overos-hardware-info
