@@ -10,6 +10,8 @@
 @define-color os_accent #70d6d0;
 @define-color os_accent_soft rgba(112, 214, 208, 0.14);
 
+@import url("components.css");
+
 * {
   font-family: "Inter", "Noto Sans", sans-serif;
   color: @os_text;
@@ -60,22 +62,6 @@ window, .overos-root {
   font-weight: 700;
 }
 
-button.overos-button {
-  background: @os_surface_alt;
-  border: 1px solid @os_border;
-  border-radius: 12px;
-  padding: 9px 13px;
-  transition: background 140ms ease, border-color 140ms ease;
-}
-
-button.overos-button:hover {
-  background: alpha(@os_accent, 0.13);
-  border-color: alpha(@os_accent, 0.4);
-}
-
-button.overos-button:active {
-  background: alpha(@os_accent, 0.22);
-}
 
 .overos-separator {
   background: @os_border;
