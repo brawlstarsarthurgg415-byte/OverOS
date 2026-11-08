@@ -103,7 +103,12 @@ jobs:
             echo 'A imagem nao chegou ao console do OverOS dentro do teste QEMU.' >&2
             exit 1
           fi
-          echo 'Imagem inicializavel: banner OverOS Custom detectado no console serial.'
+          if ! grep -Eq 'login:' out/boot-test.log; then
+            tail -n 120 out/boot-test.log
+            echo 'A imagem mostrou o banner, mas nao chegou ao prompt de login serial.' >&2
+            exit 1
+          fi
+          echo 'Imagem inicializavel: banner OverOS Custom e prompt de login detectados no console serial.'
       - name: Publish raw IMG release asset
         uses: softprops/action-gh-release@v2
         with:
