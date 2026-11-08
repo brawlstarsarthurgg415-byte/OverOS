@@ -16,14 +16,23 @@ Na raiz do repositório:
 bash scripts/build-core.sh
 ```
 
-Os binários ficam em `out/core-build/`. O script também executa os testes CTest.\n\nPara organizar os binários em uma árvore de rootfs temporária (ainda não inicializável):\n\n```sh\nbash scripts/stage-rootfs.sh\n```\n\nO resultado fica em `out/rootfs-staging/`.
+Os binários ficam em `out/core-build/`. O script também executa os testes CTest.
+
+Para organizar os binários em uma árvore de rootfs temporária (ainda não inicializável):
+
+```sh
+bash scripts/stage-rootfs.sh
+```
+
+O resultado fica em `out/rootfs-staging/`.
 
 ## Componentes
 
 - `overos-init`: protótipo de PID 1; instalado em `sbin/`, mas não deve ser usado como init de produção.
 - `overos-hardware-info`: inventário de hardware somente leitura.
 - `overos-session`: primeira sessão de console com menu nativo, instalada em `sbin/`.
-- `overosctl` e `overos-hardware-info`: ferramentas de diagnóstico instaladas em `bin/`.\n- `overos-supervisor`: supervisor experimental de serviços, instalado em `sbin/`; ainda não é iniciado pelo PID 1.
+- `overosctl` e `overos-hardware-info`: ferramentas de diagnóstico instaladas em `bin/`.
+- `overos-supervisor`: supervisor experimental de serviços, instalado em `sbin/`; ainda não é iniciado pelo PID 1.
 
 ## Aviso
 
