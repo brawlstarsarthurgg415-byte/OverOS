@@ -26,7 +26,7 @@ jobs:
       - name: Install build tools
         run: |
           pacman -Syu --noconfirm
-          pacman -S --noconfirm --needed archiso git
+          pacman -S --noconfirm --needed archiso git nodejs
 
       - name: Checkout
         uses: actions/checkout@v4
