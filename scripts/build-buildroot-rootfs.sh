@@ -193,7 +193,7 @@ cpu_family = 'x86_64'
 cpu = 'x86_64'
 endian = 'little'
 EOF
-"$MESON" setup "$PACMAN_BUILD" "$PACMAN_SOURCE" --cross-file "$CROSS_FILE" --prefix=/usr --buildtype=release -Ddoc=disabled -Dtests=disabled
+"$MESON" setup "$PACMAN_BUILD" "$PACMAN_SOURCE" --cross-file "$CROSS_FILE" --prefix=/usr --buildtype=release -Ddoc=disabled
 "$NINJA" -C "$PACMAN_BUILD"
 DESTDIR="$OVERLAY" "$MESON" install -C "$PACMAN_BUILD"
 test -x "$OVERLAY/usr/bin/pacman"
