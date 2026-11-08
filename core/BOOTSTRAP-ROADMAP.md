@@ -13,7 +13,7 @@ Este documento transforma a arquitetura em etapas verificáveis. O objetivo é u
 | Kernel e módulos por equipamento | Não compilados |
 | libc, shell e utilitários-base | Não integrados |
 | Gerenciador Pacman/libalpm | Planejado, não funcional |
-| Sessão gráfica | Tema/CSS candidato; sem sessão funcional |
+| Sessão gráfica | Protótipo de tela inicial/editor GTK4; sem compositor, login ou sessão de desktop funcional |
 | Teclado virtual e touch | Layout ABNT2, perfil tablet e estilos versionados; backend Wayland ainda pendente |
 | Boot UEFI e Secure Boot | Planejado, sem cadeia validada |
 | Imagem USB persistente | Não implementada |
@@ -92,7 +92,8 @@ Evoluir init e supervisor antes de usá-los em produção:
 
 - Detectar GPU e aceleração disponível antes de escolher compositor.
 - Manter perfil econômico com fallback por software.
-- Construir shell e componentes visuais reutilizáveis em C/C++.
+- Evoluir o protótipo GTK4 `overos-desktop` para shell e componentes visuais reutilizáveis em C/C++.
+- Integrar compositor, login/session manager, teclado virtual e início automático da sessão após o boot.
 - Suportar SVG, PNG/WebP, Cairo/Pango e, quando houver driver, OpenGL ES/Vulkan e GLSL.
 - Perfil touchscreen com alvos de toque de pelo menos 48 px, teclado virtual ABNT2 e navegação por teclado; backend de eventos ainda pendente.
 - Efeitos gráficos devem ser opcionais e desligáveis.
