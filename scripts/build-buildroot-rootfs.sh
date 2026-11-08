@@ -13,7 +13,7 @@ BUILD="$OUT/buildroot-output"
 OVERLAY="$SOURCE/board/overos-rootfs-overlay"
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "Missing build tool: $1" >&2; exit 1; }; }
-for tool in curl tar make gcc g++ cmake git perl python3 cpio rsync bc bison flex ccache; do need "$tool"; done
+for tool in curl tar make gcc g++ cmake git perl python3 cpio rsync bc bison flex ccache meson ninja; do need "$tool"; done
 
 mkdir -p "$OUT"
 
@@ -66,7 +66,7 @@ grep -qx 'BR2_CCACHE=y' "$BUILD/.config" || {
 
 # Build the target compiler first, then compile OverOS native programs against
 # the Buildroot sysroot (never against the Ubuntu/Debian host libraries).
-make -C "$SOURCE" O="$BUILD" toolchain host-meson host-ninja
+make -C "$SOURCE" O="$BUILD" toolchain
 TOOLBIN="$BUILD/host/bin"
 CC=""
 for candidate in "$TOOLBIN"/*-gcc; do
@@ -160,10 +160,10 @@ if [ ! -d "$PACMAN_SOURCE/.git" ]; then
   git -C "$PACMAN_SOURCE" fetch --depth 1 origin refs/tags/v7.0.0
   git -C "$PACMAN_SOURCE" checkout --detach FETCH_HEAD
 fi
-MESON="$BUILD/host/bin/meson"
-NINJA="$BUILD/host/bin/ninja"
-[ -x "$MESON" ] || { echo "Buildroot host-meson was not built" >&2; exit 1; }
-[ -x "$NINJA" ] || { echo "Buildroot host-ninja was not built" >&2; exit 1; }
+MESON="$(command -v meson)"
+NINJA="$(command -v ninja)"
+[ -x "$MESON" ] || { echo "Native Meson is unavailable on the build host" >&2; exit 1; }
+[ -x "$NINJA" ] || { echo "Native Ninja is unavailable on the build host" >&2; exit 1; }
 PKG_CONFIG_WRAPPER="$OUT/pkg-config-overos.sh"
 cat > "$PKG_CONFIG_WRAPPER" <<'EOF'
 #!/bin/sh
