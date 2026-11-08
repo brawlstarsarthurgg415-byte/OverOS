@@ -11,6 +11,7 @@
 @define-color os_accent_soft rgba(112, 214, 208, 0.14);
 
 @import url("components.css");
+@import url("touch-keyboard.css");
 
 * {
   font-family: "Inter", "Noto Sans", sans-serif;
