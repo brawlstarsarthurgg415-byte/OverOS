@@ -8,7 +8,7 @@ chmod +x "$SPEC"
 
 "$SPEC" version | grep -q '^Specman 0.1.0$'
 mkdir -p "$TMP/pkg/payload/usr/bin"
-cat > "$TMP/pkg/.PKGINFO" <<'EOF'
+cat > "$TMP/pkg/.PKGINFO" <<EOF
 name=hello-overos
 version=1.0.0
 arch=$(uname -m)
