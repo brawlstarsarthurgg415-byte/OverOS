@@ -25,6 +25,23 @@ target_compile_options(overosctl PRIVATE -Wall -Wextra -Wpedantic)
 add_executable(overos-supervisor services/overos-supervisor.cpp)
 target_compile_options(overos-supervisor PRIVATE -Wall -Wextra -Wpedantic)
 
+# GTK4 desktop is optional for low-dependency builds, but enabled in CI.
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+  pkg_check_modules(GTK4 QUIET IMPORTED_TARGET gtk4)
+endif()
+if(GTK4_FOUND)
+  add_executable(overos-desktop desktop/overos-desktop.cpp)
+  target_link_libraries(overos-desktop PRIVATE PkgConfig::GTK4)
+  target_compile_options(overos-desktop PRIVATE -Wall -Wextra -Wpedantic)
+  install(TARGETS overos-desktop RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+  if(BUILD_TESTING)
+    add_test(NAME desktop-version COMMAND overos-desktop --version)
+  endif()
+else()
+  message(STATUS "GTK4 not found: skipping optional overos-desktop target")
+endif()
+
 install(TARGETS overos-init
   RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
 install(TARGETS overos-session
