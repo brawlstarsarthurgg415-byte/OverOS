@@ -15,6 +15,7 @@ on:
       - "scripts/build-buildroot-rootfs.sh"
       - "scripts/test-rootfs-staging.sh"
       - "scripts/test-touch-assets.sh"
+      - "scripts/test-specman.sh"
       - "scripts/check-touchscreen.sh"
       - "scripts/check-secure-boot-tools.sh"
       - ".github/workflows/build-core.yml"
@@ -37,6 +38,13 @@ jobs:
         run: bash scripts/check-build-host.sh
       - name: Validate touch and virtual keyboard assets
         run: bash scripts/test-touch-assets.sh
+      - name: Validate Specman package manager
+        run: bash scripts/test-specman.sh
+      - name: Validate shell scripts
+        run: |
+          sh -n board/overos/rootfs-overlay/usr/bin/specman
+          sh -n board/overos/rootfs-overlay/usr/bin/overos-gui
+          bash -n scripts/build-buildroot-rootfs.sh scripts/build-bootable-img.sh
       - name: Validate touchscreen diagnostic script
         run: bash -n scripts/check-touchscreen.sh
       - name: Inventory Secure Boot development tools (read-only)
