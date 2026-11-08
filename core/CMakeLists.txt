@@ -12,3 +12,6 @@ target_compile_options(overos-init PRIVATE -Wall -Wextra -Wpedantic -Wconversion
 
 add_executable(overos-hardware-info services/hardware-info.cpp)
 target_compile_options(overos-hardware-info PRIVATE -Wall -Wextra -Wpedantic)
+
+add_executable(overos-session session/overos-session.cpp)
+target_compile_options(overos-session PRIVATE -Wall -Wextra -Wpedantic)
