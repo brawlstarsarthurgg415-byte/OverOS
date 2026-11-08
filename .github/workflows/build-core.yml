@@ -21,6 +21,10 @@ on:
       - ".github/workflows/build-core.yml"
   workflow_dispatch:
 
+concurrency:
+  group: overos-custom-core-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -82,7 +86,7 @@ jobs:
           body: |
             Imagem raw inicializavel do OverOS Custom para testes.
             Testada por smoke test no QEMU; ainda e uma imagem de desenvolvimento, nao a distribuicao independente final.
-            Inclui rootfs BusyBox/musl e kernel construidos com Buildroot, boot BIOS e UEFI. Ainda e uma imagem inicial de desenvolvimento; Pacman/libalpm e a integracao completa dos programas OverOS continuam pendentes. Secure Boot nao foi validado.
+            Inclui rootfs BusyBox/musl, kernel Linux, Specman MVP, rede e desktop leve construidos com Buildroot. Repositorio assinado, Secure Boot e compatibilidade com hardware real ainda nao foram validados.
           prerelease: true
           files: out/OverOS-Custom.img
           fail_on_unmatched_files: true
