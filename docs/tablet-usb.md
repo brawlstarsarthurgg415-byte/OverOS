@@ -49,3 +49,9 @@ Antes de declarar compatibilidade, registrar:
 ## Critério de aceite
 
 O perfil só será considerado compatível quando iniciar pelo USB com Secure Boot no estado original, detectar tela e toque, oferecer rede funcional e não modificar o armazenamento interno. Até lá, é um alvo experimental.
+
+## Coleta de dados no Windows
+
+Antes de escolher o carregador EFI, use o procedimento somente de leitura em [tablet-inventory.md](tablet-inventory.md) e o script [../scripts/tablet-inventory.ps1](../scripts/tablet-inventory.ps1). Ele consulta modelo, CPU, RAM, firmware, Secure Boot, vídeo e discos sem alterar configurações.
+
+O ponto decisivo para Secure Boot é saber se o firmware confia na Microsoft Third-Party UEFI CA e se permite iniciar a cadeia assinada escolhida. Não presumir que sim apenas porque o Windows inicia normalmente.
