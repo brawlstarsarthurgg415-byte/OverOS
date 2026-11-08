@@ -109,6 +109,36 @@ void on_motion_toggled(GtkCheckButton *button, gpointer) {
     reduced_motion = gtk_check_button_get_active(button);
 }
 
+
+void on_save_clicked(GtkButton *, gpointer) {
+    save_settings();
+}
+
+void on_hardware_clicked(GtkButton *, gpointer) {
+    gchar *output = nullptr;
+    gchar *errors = nullptr;
+    gint exit_status = 0;
+    GError *error = nullptr;
+    const gchar *commands[] = {"/usr/bin/overos-hardware-info", "overos-hardware-info"};
+    bool ran = false;
+    for (const gchar *command : commands) {
+        if (g_spawn_command_line_sync(command, &output, &errors, &exit_status, &error)) {
+            ran = true;
+            break;
+        }
+        g_clear_error(&error);
+    }
+    std::string message = ran && output ? output :
+        "O utilitário de inventário ainda não está instalado nesta sessão.";
+    if (errors && *errors) message += std::string("\\n") + errors;
+    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_MODAL,
+        GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "%s", message.c_str());
+    g_signal_connect_swapped(dialog, "response", G_CALLBACK(gtk_window_destroy), dialog);
+    gtk_window_present(GTK_WINDOW(dialog));
+    g_free(output);
+    g_free(errors);
+}
+
 void open_editor(GtkButton *, gpointer) {
     GtkWidget *editor = gtk_window_new();
     gtk_window_set_title(GTK_WINDOW(editor), "Editor de interface • OverOS");
@@ -160,7 +190,7 @@ void open_editor(GtkButton *, gpointer) {
     GtkWidget *save = gtk_button_new_with_label("Salvar preferências");
     gtk_widget_add_css_class(save, "overos-action");
     g_signal_connect_swapped(cancel, "clicked", G_CALLBACK(gtk_window_destroy), editor);
-    g_signal_connect_swapped(save, "clicked", G_CALLBACK(save_settings), nullptr);
+    g_signal_connect(save, "clicked", G_CALLBACK(on_save_clicked), nullptr);
     g_signal_connect_swapped(save, "clicked", G_CALLBACK(gtk_window_destroy), editor);
     gtk_box_append(GTK_BOX(buttons), cancel);
     gtk_box_append(GTK_BOX(buttons), save);
@@ -211,6 +241,7 @@ void on_application_activate(GtkApplication *app, gpointer) {
     gtk_box_append(GTK_BOX(system_card), make_label("Veja informações de hardware e estado do sistema.", "overos-muted"));
     GtkWidget *system_button = gtk_button_new_with_label("Abrir informações");
     gtk_widget_add_css_class(system_button, "overos-secondary");
+    g_signal_connect(system_button, "clicked", G_CALLBACK(on_hardware_clicked), nullptr);
     gtk_box_append(GTK_BOX(system_card), system_button);
 
     GtkWidget *editor_card = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
