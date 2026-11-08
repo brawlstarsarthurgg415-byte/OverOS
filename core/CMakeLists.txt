@@ -29,8 +29,10 @@ install(TARGETS overos-init
   RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
 install(TARGETS overos-session
   RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
-install(TARGETS overos-hardware-info overosctl overos-supervisor
+install(TARGETS overos-hardware-info overosctl
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS overos-supervisor
+  RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
 
 if(BUILD_TESTING)
   add_test(NAME overosctl-help COMMAND overosctl help)
@@ -39,6 +41,9 @@ if(BUILD_TESTING)
   add_test(NAME hardware-inventory COMMAND overos-hardware-info)
   add_test(NAME session-exits-cleanly COMMAND bash -c "echo 0 | $<TARGET_FILE:overos-session>")
   add_test(NAME supervisor-validates-config COMMAND overos-supervisor --check-config ${CMAKE_CURRENT_SOURCE_DIR}/tests/services.conf.example)
+  add_test(NAME supervisor-rejects-relative-path COMMAND overos-supervisor --check-config ${CMAKE_CURRENT_SOURCE_DIR}/tests/services.conf.invalid-relative)
+  add_test(NAME supervisor-rejects-duplicate-path COMMAND overos-supervisor --check-config ${CMAKE_CURRENT_SOURCE_DIR}/tests/services.conf.invalid-duplicate)
+  set_tests_properties(supervisor-rejects-relative-path supervisor-rejects-duplicate-path PROPERTIES WILL_FAIL TRUE)
   add_test(NAME init-refuses-non-pid1 COMMAND overos-init)
   set_tests_properties(init-refuses-non-pid1 PROPERTIES WILL_FAIL TRUE)
 endif()
