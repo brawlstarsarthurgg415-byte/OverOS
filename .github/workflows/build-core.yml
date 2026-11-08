@@ -29,7 +29,7 @@ jobs:
       - name: Install native build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential cmake libgtk-4-dev debootstrap grub-pc-bin grub-efi-amd64-bin dosfstools parted e2fsprogs mtools qemu-system-x86
+          sudo apt-get install -y --no-install-recommends build-essential cmake libgtk-4-dev curl wget perl python3 cpio rsync bc bison flex file unzip libncurses-dev grub-pc-bin grub-efi-amd64-bin dosfstools parted e2fsprogs mtools qemu-system-x86
       - name: Check build host prerequisites
         run: bash scripts/check-build-host.sh
       - name: Validate touch and virtual keyboard assets
@@ -44,6 +44,8 @@ jobs:
         run: bash scripts/stage-rootfs.sh
       - name: Verify staged rootfs layout
         run: bash scripts/test-rootfs-staging.sh
+      - name: Build independent Buildroot rootfs and Linux kernel
+        run: bash scripts/build-buildroot-rootfs.sh
       - name: Build bootable raw image (BIOS + UEFI)
         run: sudo bash scripts/build-bootable-img.sh
       - name: Verify generated image exists and is non-empty
@@ -69,7 +71,7 @@ jobs:
           body: |
             Imagem raw inicializavel do OverOS Custom para testes.
             Testada por smoke test no QEMU; ainda e uma imagem de desenvolvimento, nao a distribuicao independente final.
-            Inclui kernel/base Debian temporarios, componentes nativos OverOS, boot BIOS e UEFI. Secure Boot nao foi validado.
+            Inclui rootfs BusyBox/musl e kernel construidos com Buildroot, boot BIOS e UEFI. Ainda e uma imagem inicial de desenvolvimento; Pacman/libalpm e a integracao completa dos programas OverOS continuam pendentes. Secure Boot nao foi validado.
           prerelease: true
           files: out/OverOS-Custom.img
           fail_on_unmatched_files: true
