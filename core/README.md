@@ -17,7 +17,7 @@ Este diretório inicia a implementação nativa do OverOS. O objetivo é constru
 3. Root filesystem próprio, com init e serviços do OverOS.
 4. Rede, áudio, armazenamento, firmware e entrada.
 5. Sessão gráfica modular: compositor e shell escolhidos após testes de GPU.
-6. Gerenciador de pacotes: integração com libalpm/Pacman será feita depois que glibc, libarchive, curl, openssl, zstd e o formato de pacotes estiverem definidos e testados. Não declarar Pacman operacional antes disso.
+6. Gerenciador de pacotes próprio Specman; o MVP local já cria, instala e remove pacotes isolados com verificação SHA-256, sem scripts de pacote.
 
 ## Código inicial e staging
 
@@ -38,7 +38,7 @@ O plano técnico de boot, UEFI, Secure Boot, imagem externa e critérios de test
 
 A política de confiança, assinatura, proteção das chaves e testes está em [`SECURE-BOOT.md`](SECURE-BOOT.md). O preflight de ferramentas é somente leitura: `bash scripts/check-secure-boot-tools.sh`. Isso não instala ferramentas, não cria chaves e não ativa Secure Boot no hardware.
 
-## Interface inicial GTK4
+## Interface gráfica leve\n\nA primeira imagem Buildroot inclui Xfbdev, Openbox, xterm e o comando `overos-gui`, com fallback para console. NetworkManager/nmtui é apresentado no primeiro login do tty1. A compatibilidade de vídeo e rede ainda precisa ser testada no hardware real.\n\n## Interface inicial GTK4
 
 Foi adicionado o protótipo nativo `overos-desktop` em C++20/GTK4. A tela inicial possui um botão **Personalizar interface**, que abre o editor para cor de destaque, escala, alto contraste e redução de animações; as preferências são salvas no diretório de configuração do usuário. O alvo é opcional: builds sem GTK4 continuam com o console. O protótipo ainda não está conectado a um compositor/display manager, não inicia automaticamente no boot e depende das bibliotecas GTK4 no sistema de execução. Não declarar sessão gráfica completa até integrar compositor, login e entrada touch real.
 
