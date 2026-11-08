@@ -1,0 +1,43 @@
+name: Build OverOS ISO
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "iso/**"
+      - "scripts/build-iso.sh"
+      - ".github/workflows/build-iso.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: overos-iso-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-iso:
+    name: Build bootable Arch ISO
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Install build tools
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm --needed archiso git
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build ISO
+        run: bash scripts/build-iso.sh
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: OverOS-ISO-${{ github.sha }}
+          path: out/*.iso
+          if-no-files-found: error
+          retention-days: 14
