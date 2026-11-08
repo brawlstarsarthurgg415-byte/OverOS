@@ -22,11 +22,14 @@ target_compile_options(overos-session PRIVATE -Wall -Wextra -Wpedantic)
 add_executable(overosctl tools/overosctl.cpp)
 target_compile_options(overosctl PRIVATE -Wall -Wextra -Wpedantic)
 
+add_executable(overos-supervisor services/overos-supervisor.cpp)
+target_compile_options(overos-supervisor PRIVATE -Wall -Wextra -Wpedantic)
+
 install(TARGETS overos-init
   RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
 install(TARGETS overos-session
   RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
-install(TARGETS overos-hardware-info overosctl
+install(TARGETS overos-hardware-info overosctl overos-supervisor
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 if(BUILD_TESTING)
@@ -35,6 +38,7 @@ if(BUILD_TESTING)
   add_test(NAME overosctl-status COMMAND overosctl status)
   add_test(NAME hardware-inventory COMMAND overos-hardware-info)
   add_test(NAME session-exits-cleanly COMMAND bash -c "echo 0 | $<TARGET_FILE:overos-session>")
+  add_test(NAME supervisor-validates-config COMMAND overos-supervisor --check-config ${CMAKE_CURRENT_SOURCE_DIR}/tests/services.conf.example)
   add_test(NAME init-refuses-non-pid1 COMMAND overos-init)
   set_tests_properties(init-refuses-non-pid1 PROPERTIES WILL_FAIL TRUE)
 endif()
