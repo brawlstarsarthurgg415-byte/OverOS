@@ -6,23 +6,14 @@
  */
 #define _GNU_SOURCE
 #include <errno.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
-#include <sys/reboot.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-static volatile sig_atomic_t child_changed = 0;
-
-static void on_sigchld(int signal_number) {
-    (void)signal_number;
-    child_changed = 1;
-}
 
 static void log_line(const char *message) {
     (void)write(STDERR_FILENO, "overos-init: ", 13);
@@ -59,19 +50,11 @@ int main(void) {
 
     (void)setsid();
     prepare_early_userspace();
-
-    struct sigaction action;
-    memset(&action, 0, sizeof(action));
-    action.sa_handler = on_sigchld;
-    sigemptyset(&action.sa_mask);
-    action.sa_flags = SA_RESTART | SA_NOCLDSTOP;
-    (void)sigaction(SIGCHLD, &action, NULL);
-
     log_line("OverOS early userspace started");
     log_line("starting emergency console");
 
     for (;;) {
-        pid_t child = fork();
+        const pid_t child = fork();
         if (child == -1) {
             log_line("fork failed; retrying");
             sleep(2);
@@ -87,10 +70,16 @@ int main(void) {
         }
 
         int status = 0;
-        while (waitpid(child, &status, 0) == -1 && errno == EINTR) {
+        pid_t waited;
+        do {
+            waited = waitpid(child, &status, 0);
+        } while (waited == -1 && errno == EINTR);
+
+        if (waited == -1) {
+            log_line("waitpid failed; retrying console");
+        } else {
+            log_line("console/session exited; restarting fallback");
         }
-        child_changed = 0;
-        log_line("console/session exited; restarting fallback");
         sleep(1);
     }
 }
