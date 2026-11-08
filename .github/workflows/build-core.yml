@@ -7,6 +7,7 @@ on:
       - "core/**"
       - "scripts/build-core.sh"
       - "scripts/stage-rootfs.sh"
+      - "scripts/test-rootfs-staging.sh"
       - ".github/workflows/build-core.yml"
   workflow_dispatch:
 
@@ -27,6 +28,8 @@ jobs:
         run: bash scripts/build-core.sh
       - name: Assemble development rootfs staging tree
         run: bash scripts/stage-rootfs.sh
+      - name: Verify staged rootfs layout
+        run: bash scripts/test-rootfs-staging.sh
       - name: Upload native binaries
         uses: actions/upload-artifact@v4
         with:
