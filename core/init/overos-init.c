@@ -64,7 +64,8 @@ int main(void) {
         if (child == 0) {
             (void)setsid();
             (void)chdir("/");
-            execl("/usr/sbin/overos-session", "overos-session", (char *)NULL);\n            execl("/sbin/overos-session", "overos-session", (char *)NULL);
+            execl("/usr/sbin/overos-session", "overos-session", (char *)NULL);
+            execl("/sbin/overos-session", "overos-session", (char *)NULL);
             execl("/bin/sh", "sh", (char *)NULL);
             _exit(127);
         }
