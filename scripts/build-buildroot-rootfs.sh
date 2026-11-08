@@ -165,10 +165,17 @@ DBPath = /var/lib/pacman/
 CacheDir = /var/cache/pacman/pkg/
 LogFile = /var/log/pacman.log
 GPGDir = /etc/pacman.d/gnupg/
-SigLevel = Required DatabaseOptional
-LocalFileSigLevel = Optional
-# No Arch Linux repositories are configured: their binary packages target
-# glibc and must not be installed on the musl-based OverOS.
+SigLevel = Required DatabaseRequired
+LocalFileSigLevel = Required
+
+# Official OverVault repository endpoint. The hosting workflow and trusted
+# public signing key must be deployed before remote installs can succeed.
+[overvault]
+SigLevel = Required DatabaseRequired
+Server = https://brawlstarsarthurgg415-byte.github.io/OverOS/overvault/$arch
+
+# Do not add Ubuntu/Arch binary repositories here: their package binaries
+# are not compatible with the musl-based OverOS root filesystem.
 EOF
 
 # Build the complete target: kernel, musl/BusyBox rootfs, network stack,
