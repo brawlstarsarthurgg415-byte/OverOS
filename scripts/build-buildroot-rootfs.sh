@@ -147,6 +147,11 @@ for binary in overos-init overos-session overos-supervisor; do
 done
 
 
+# Build Pacman dependency libraries into the target sysroot before Meson
+# cross-compiles against them. `make toolchain` alone does not stage these
+# package headers and libraries.
+make -C "$SOURCE" O="$BUILD" -j"$(nproc)" libarchive libcurl gpgme openssl zstd
+
 # Build upstream Pacman/libalpm for the OverOS musl userspace. This does not
 # use Arch Linux binary repositories: their packages target glibc and are
 # incompatible with this system. Pacman can install local OverOS .pkg.tar.*
@@ -193,7 +198,7 @@ cpu_family = 'x86_64'
 cpu = 'x86_64'
 endian = 'little'
 EOF
-"$MESON" setup "$PACMAN_BUILD" "$PACMAN_SOURCE" --cross-file "$CROSS_FILE" --prefix=/usr --buildtype=release -Ddoc=disabled
+"$MESON" setup "$PACMAN_BUILD" "$PACMAN_SOURCE" --cross-file "$CROSS_FILE" --prefix=/usr --buildtype=release -Ddoc=disabled -Di18n=false -Dcrypto=openssl
 "$NINJA" -C "$PACMAN_BUILD"
 DESTDIR="$OVERLAY" "$MESON" install -C "$PACMAN_BUILD"
 test -x "$OVERLAY/usr/bin/pacman"
