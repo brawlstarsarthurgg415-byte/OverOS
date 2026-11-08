@@ -147,9 +147,24 @@ cpu_family = 'x86_64'
 cpu = 'x86_64'
 endian = 'little'
 EOF
-"$MESON" setup "$PACMAN_BUILD" "$PACMAN_SOURCE" --cross-file "$CROSS_FILE" --prefix=/usr --buildtype=release
+"$MESON" setup "$PACMAN_BUILD" "$PACMAN_SOURCE" --cross-file "$CROSS_FILE" --prefix=/usr --buildtype=release -Ddoc=disabled -Dtests=disabled
 "$NINJA" -C "$PACMAN_BUILD"
 DESTDIR="$OVERLAY" "$MESON" install -C "$PACMAN_BUILD"
+test -x "$OVERLAY/usr/bin/pacman"
+find "$OVERLAY/usr/lib" "$OVERLAY/usr/lib64" -name 'libalpm.so*' -print -quit 2>/dev/null | grep -q .
+install -d "$OVERLAY/etc"
+cat > "$OVERLAY/etc/pacman.conf" <<'EOF'
+[options]
+Architecture = auto
+DBPath = /var/lib/pacman/
+CacheDir = /var/cache/pacman/pkg/
+LogFile = /var/log/pacman.log
+GPGDir = /etc/pacman.d/gnupg/
+SigLevel = Optional DatabaseOptional
+LocalFileSigLevel = Optional
+# No Arch Linux repositories are configured: their binary packages target
+# glibc and must not be installed on the musl-based OverOS.
+EOF
 
 # Build the complete target: kernel, musl/BusyBox rootfs, network stack,
 # OpenSSH, Xfbdev/Openbox and the OverOS binaries above.
