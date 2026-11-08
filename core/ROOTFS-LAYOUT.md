@@ -4,7 +4,7 @@ This is the target layout for a root filesystem assembled from individually buil
 
 - `/usr/sbin/overos-init` — current PID 1 prototype; not production-ready.
 - `/usr/sbin/overos-session` — native console session prototype.
-- `/usr/bin/overos-hardware-info` — read-only hardware report.\n- `/usr/bin/overosctl` — read-only system diagnostic CLI.\n- `/bin` and `/sbin` — compatibility symlinks to `/usr/bin` and `/usr/sbin` in the development staging tree.
+- `/usr/bin/overos-hardware-info` — read-only hardware report.\n- `/usr/bin/overosctl` — read-only system diagnostic CLI.\n- `/usr/sbin/overos-supervisor` — experimental service supervisor, not yet started by init.\n- `/bin` and `/sbin` — compatibility symlinks to `/usr/bin` and `/usr/sbin` in the development staging tree.
 - `/etc/overos/` — system configuration.
 - `/var/log/overos/` — service logs.
 - `/var/lib/overos/` — state and package metadata.
