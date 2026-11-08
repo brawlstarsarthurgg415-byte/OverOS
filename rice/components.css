@@ -1,0 +1,121 @@
+/* OverOS UI Components — GTK4/Astal
+ * Reusable button styles. Import from astal.css.
+ * Keep touch targets comfortable; effects remain inexpensive.
+ */
+
+button.overos-button {
+  min-height: 42px;
+  min-width: 42px;
+  padding: 10px 16px;
+  border-radius: 13px;
+  border: 1px solid @os_border;
+  background: @os_surface_alt;
+  color: @os_text;
+  font-weight: 650;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+/* Main action */
+button.overos-button.primary {
+  color: #071719;
+  background: @os_accent;
+  border-color: alpha(@os_accent, 0.75);
+}
+button.overos-button.primary:hover {
+  background: shade(@os_accent, 1.08);
+  border-color: @os_accent;
+}
+
+/* Secondary and quiet actions */
+button.overos-button.secondary {
+  background: @os_surface_alt;
+  color: @os_text;
+}
+button.overos-button.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: @os_muted;
+}
+button.overos-button.ghost:hover {
+  color: @os_text;
+  background: @os_accent_soft;
+  border-color: alpha(@os_accent, 0.2);
+}
+
+/* Destructive actions are visually distinct, never used as the default. */
+button.overos-button.danger {
+  color: #ffe9eb;
+  background: #542832;
+  border-color: alpha(#ff8492, 0.28);
+}
+button.overos-button.danger:hover {
+  background: #6a303c;
+  border-color: alpha(#ff8492, 0.55);
+}
+
+/* Compact icon-only and pill controls */
+button.overos-button.icon {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+  border-radius: 13px;
+}
+button.overos-button.pill {
+  min-height: 36px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+/* Selected/toggle state */
+button.overos-button:checked,
+button.overos-button.selected {
+  color: @os_accent;
+  background: @os_accent_soft;
+  border-color: alpha(@os_accent, 0.48);
+}
+
+/* Interaction and accessibility states */
+button.overos-button:focus-visible {
+  outline: 2px solid @os_accent;
+  outline-offset: 2px;
+}
+button.overos-button:active {
+  background: alpha(@os_accent, 0.22);
+}
+button.overos-button:disabled {
+  color: alpha(@os_text, 0.38);
+  background: alpha(@os_surface_alt, 0.55);
+  border-color: alpha(@os_border, 0.55);
+}
+
+/* Use .loading while an action is running; pair with a spinner widget. */
+button.overos-button.loading {
+  color: @os_muted;
+  background: @os_surface;
+}
+
+/* Tablet/touch profile: larger targets without changing desktop styling. */
+.overos-touch button.overos-button {
+  min-height: 48px;
+  min-width: 48px;
+  padding: 12px 18px;
+  border-radius: 15px;
+}
+.overos-touch button.overos-button.icon {
+  min-height: 48px;
+  min-width: 48px;
+  padding: 10px;
+}
+.overos-touch button.overos-button.pill {
+  min-height: 42px;
+  padding: 9px 16px;
+}
+
+/* Card action buttons */
+button.overos-button.card-action {
+  min-height: 56px;
+  padding: 12px 15px;
+  border-radius: 15px;
+  text-align: left;
+}
