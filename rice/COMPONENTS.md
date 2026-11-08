@@ -46,3 +46,8 @@ Em Astal, aplique as mesmas classes ao widget GTK Button. A classe `overos-touch
 ## Estado
 
 A folha de estilos e a especificação dos componentes estão versionadas. A integração em uma tela real do shell e os testes em GTK/Astal ainda precisam ser executados.
+
+
+## Teclado virtual
+
+Consulte `KEYBOARD.md` para os componentes visuais, `keyboard/pt-BR-abnt2.json` para o layout ABNT2 e `input-tablet.conf` para os padrões do perfil tablet. A integração de eventos Wayland ainda está em desenvolvimento.
