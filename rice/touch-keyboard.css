@@ -8,7 +8,7 @@
 }
 .overos-keyboard-row { min-height: 48px; margin: 3px 0; }
 button.overos-key {
-  min-width: 36px; min-height: 48px; padding: 6px 8px;
+  min-width: 48px; min-height: 48px; padding: 6px 8px;
   border-radius: 10px; border: 1px solid @os_border;
   background: @os_surface_alt; color: @os_text;
   font-size: 15px; font-weight: 600;
