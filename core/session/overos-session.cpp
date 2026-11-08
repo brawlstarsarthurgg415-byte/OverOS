@@ -16,11 +16,11 @@ void pause() {
 
 void show_header() {
     std::cout << "\033[1;36m"
-              << "  ==============================\\n"
-              << "          O V E R O S\\n"
-              << "  ==============================\\n"
+              << "  ==============================\n"
+              << "          O V E R O S\n"
+              << "  ==============================\n"
               << "\033[0m"
-              << "  Sistema independente • modo inicial\\n\\n";
+              << "  Sistema independente • modo inicial\n\n";
 }
 
 void show_system_info() {
