@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+if ! command -v startx >/dev/null 2>&1; then
+    echo "OverOS: servidor grafico nao instalado; continue pelo terminal."
+    exit 1
+fi
+if ! command -v openbox-session >/dev/null 2>&1; then
+    echo "OverOS: Openbox nao esta disponivel."
+    exit 1
+fi
+exec startx /usr/bin/openbox-session -- :0 -nolisten tcp
