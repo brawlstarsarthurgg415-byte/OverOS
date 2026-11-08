@@ -34,6 +34,10 @@ O workflow de CI foi configurado para compilar os programas, executar os testes 
 
 O plano técnico de boot, UEFI, Secure Boot, imagem externa e critérios de teste está em [`BOOT-IMPLEMENTATION-PLAN.md`](BOOT-IMPLEMENTATION-PLAN.md). Ele separa o boot de laboratório em VM da validação de confiança no firmware real; nenhum deles está concluído ainda.
 
+## Secure Boot
+
+A política de confiança, assinatura, proteção das chaves e testes está em [`SECURE-BOOT.md`](SECURE-BOOT.md). O preflight de ferramentas é somente leitura: `bash scripts/check-secure-boot-tools.sh`. Isso não instala ferramentas, não cria chaves e não ativa Secure Boot no hardware.
+
 ## Próximas etapas
 
 - `BOOTSTRAP-ROADMAP.md`: sequência de construção e critérios de aceite.
