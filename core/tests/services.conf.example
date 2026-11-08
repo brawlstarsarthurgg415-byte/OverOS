@@ -1,0 +1,3 @@
+# OverOS service supervisor example.
+# One absolute executable path per line; no shell commands or arguments.
+/usr/bin/overos-hardware-info
