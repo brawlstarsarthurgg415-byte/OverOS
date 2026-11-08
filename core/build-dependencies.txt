@@ -1,0 +1,7 @@
+# OverOS native core — development dependency inventory
+# These are build-host packages, not a distro root filesystem.
+# Runtime dependencies will be pinned in the custom package repository later.
+cmake
+gcc
+binutils
+make
