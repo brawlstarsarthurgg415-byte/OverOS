@@ -24,7 +24,7 @@
 - Pacotes assinados e repositório próprio.
 - Sessão gráfica modular, com perfil touchscreen e fallback para hardware legado.
 
-O uso de uma distribuição Linux como máquina hospedeira de desenvolvimento não significa que ela será a base do sistema final.
+O uso de Ubuntu no runner do GitHub Actions serve apenas como máquina hospedeira de desenvolvimento. O rootfs de destino agora é construído pelo Buildroot com BusyBox e musl; Debian não é usado como sistema-base da imagem.
 
 ## Estado real do desenvolvimento
 
@@ -66,4 +66,4 @@ Nenhum script de build deve selecionar ou formatar discos físicos automaticamen
 
 ## Aviso
 
-O projeto ainda não é um sistema operacional pronto para uso diário. Os programas atuais são protótipos de espaço de usuário; o init ainda não deve ser usado como PID 1 em uma máquina real. Consulte `core/BUILDING.md` e `core/ROOTFS-LAYOUT.md`.
+O projeto ainda não é um sistema operacional pronto para uso diário. A primeira rota Buildroot foi adicionada, mas precisa passar pelo CI e por testes de boot antes de ser considerada funcional. Os programas atuais são protótipos de espaço de usuário; o init ainda não deve ser usado como PID 1 em uma máquina real. Consulte `core/BUILDING.md` e `core/ROOTFS-LAYOUT.md`.
