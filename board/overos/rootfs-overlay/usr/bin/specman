@@ -1,0 +1,185 @@
+#!/bin/sh
+# Specman 0.1 — OverOS local package manager.
+# Packages are gzip tar archives with .PKGINFO and payload/.
+# Payloads are isolated under /opt/specman; package scripts never run.
+set -eu
+
+ROOT="${SPEC_MAN_ROOT:-/}"
+DB="$ROOT/var/lib/specman/local"
+PREFIX="$ROOT/opt/specman/packages"
+BIN="$ROOT/usr/local/bin"
+TMP=""
+
+fail() { echo "specman: $*" >&2; exit 1; }
+cleanup() { [ -z "$TMP" ] || rm -rf "$TMP"; }
+trap cleanup EXIT HUP INT TERM
+
+usage() {
+    cat <<'EOF'
+Specman 0.1 — OverOS package manager
+Usage:
+  specman version
+  specman help
+  specman list
+  specman info NAME
+  specman create DIRECTORY OUTPUT.spkg
+  specman install FILE.spkg SHA256
+  specman remove NAME
+
+A package directory contains .PKGINFO and payload/usr/bin/.
+Installations are isolated in /opt/specman. Package scripts never run.
+Installation requires a trusted SHA-256 supplied by the maintainer.
+EOF
+}
+
+meta_value() {
+    sed -n "s/^$2=//p" "$1" | head -n 1
+}
+
+valid_name() {
+    printf '%s' "$1" | grep -Eq '^[a-z0-9][a-z0-9+_.-]*$'
+}
+
+valid_version() {
+    printf '%s' "$1" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9._+-]*$'
+}
+
+safe_archive() {
+    archive="$1"
+    list="$TMP/list"
+    verbose="$TMP/verbose"
+    tar -tzf "$archive" > "$list" || fail "arquivo .spkg invalido"
+    while IFS= read -r item; do
+        item=${item#./}
+        printf '%s' "$item" | grep -Eq '^[A-Za-z0-9._+/-]+$' || fail "nome de arquivo inseguro no pacote"
+        case "$item" in
+            ""|/*|..|../*|*/../*|*/..) fail "caminho inseguro no pacote: $item" ;;
+            *//*|*/./*|payload/.) fail "caminho nao canonico no pacote: $item" ;;
+            .PKGINFO|payload|payload/*) ;;
+            *) fail "entrada fora do formato Specman: $item" ;;
+        esac
+    done < "$list"
+    tar -tvzf "$archive" > "$verbose" || fail "nao foi possivel ler o pacote"
+    while IFS= read -r line; do
+        kind=$(printf '%s' "$line" | cut -c1)
+        case "$kind" in
+            -|d) ;;
+            *) fail "links e tipos especiais nao sao permitidos no pacote" ;;
+        esac
+    done < "$verbose"
+}
+
+cmd="${1:-help}"
+case "$cmd" in
+    version)
+        echo "Specman 0.1.0"
+        ;;
+    help|-h|--help)
+        usage
+        ;;
+    list)
+        mkdir -p "$DB"
+        found=0
+        for file in "$DB"/*.meta; do
+            [ -f "$file" ] || continue
+            found=1
+            echo "$(meta_value "$file" name) $(meta_value "$file" version) [$(meta_value "$file" arch)]"
+        done
+        [ "$found" -eq 1 ] || echo "Nenhum pacote instalado."
+        ;;
+    info)
+        [ "$#" -eq 2 ] || fail "uso: specman info NAME"
+        valid_name "$2" || fail "nome de pacote invalido"
+        file="$DB/$2.meta"
+        [ -f "$file" ] || fail "pacote nao instalado: $2"
+        cat "$file"
+        ;;
+    create)
+        [ "$#" -eq 3 ] || fail "uso: specman create DIRECTORY OUTPUT.spkg"
+        dir="$2"
+        out="$3"
+        [ -d "$dir/payload" ] && [ -f "$dir/.PKGINFO" ] || fail "diretorio precisa conter .PKGINFO e payload/"
+        name=$(meta_value "$dir/.PKGINFO" name)
+        version=$(meta_value "$dir/.PKGINFO" version)
+        arch=$(meta_value "$dir/.PKGINFO" arch)
+        valid_name "$name" || fail "name invalido no .PKGINFO"
+        valid_version "$version" || fail "version invalida no .PKGINFO"
+        [ -n "$arch" ] || fail "arch obrigatoria no .PKGINFO"
+        mkdir -p "$(dirname "$out")"
+        tar --format=ustar -czf "$out" -C "$dir" .PKGINFO payload
+        echo "Pacote criado: $out"
+        sha256sum "$out"
+        ;;
+    install)
+        [ "$#" -eq 3 ] || fail "uso: specman install FILE.spkg SHA256"
+        [ -f "$2" ] || fail "arquivo nao encontrado: $2"
+        printf '%s' "$3" | grep -Eq '^[a-fA-F0-9]{64}$' || fail "informe um SHA-256 de 64 caracteres"
+        if [ "$ROOT" = "/" ] && [ "$(id -u)" -ne 0 ]; then fail "instalacao requer root"; fi
+        actual=$(sha256sum "$2" | awk '{print $1}')
+        [ "$actual" = "$3" ] || fail "SHA-256 nao confere"
+        TMP=$(mktemp -d)
+        safe_archive "$2"
+        tar -xzf "$2" -C "$TMP" --no-same-owner --no-same-permissions
+        info="$TMP/.PKGINFO"
+        [ -f "$info" ] || fail ".PKGINFO ausente"
+        name=$(meta_value "$info" name)
+        version=$(meta_value "$info" version)
+        arch=$(meta_value "$info" arch)
+        valid_name "$name" || fail "nome de pacote invalido"
+        valid_version "$version" || fail "versao de pacote invalida"
+        [ -n "$arch" ] || fail "arquitetura ausente"
+        [ "$arch" = "$(uname -m)" ] || fail "arquitetura $arch nao corresponde a $(uname -m)"
+        [ -d "$TMP/payload" ] || fail "payload/ ausente"
+        mkdir -p "$DB" "$PREFIX/$name" "$BIN"
+        [ ! -f "$DB/$name.meta" ] || fail "pacote ja instalado: $name"
+        dest="$PREFIX/$name/$version"
+        [ ! -e "$dest" ] || fail "versao ja instalada: $name $version"
+        for entry in $(sed -n 's/^bin=//p' "$info"); do
+            printf '%s' "$entry" | grep -Eq '^[a-zA-Z0-9._+-]+$' || fail "nome de executavel invalido"
+            [ -f "$TMP/payload/usr/bin/$entry" ] || fail "binario declarado nao existe: $entry"
+            [ ! -e "$BIN/$entry" ] || fail "comando ja existe: $entry"
+        done
+        mkdir -p "$dest"
+        cp -R "$TMP/payload" "$dest/payload"
+        cp "$info" "$dest/.PKGINFO"
+        : > "$dest/.binaries"
+        for entry in $(sed -n 's/^bin=//p' "$info"); do
+            ln -s "$dest/payload/usr/bin/$entry" "$BIN/$entry"
+            echo "$entry" >> "$dest/.binaries"
+        done
+        {
+            echo "name=$name"
+            echo "version=$version"
+            echo "arch=$arch"
+            echo "description=$(meta_value "$info" description)"
+            echo "sha256=$actual"
+        } > "$DB/$name.meta"
+        echo "Instalado: $name $version"
+        ;;
+    remove)
+        [ "$#" -eq 2 ] || fail "uso: specman remove NAME"
+        if [ "$ROOT" = "/" ] && [ "$(id -u)" -ne 0 ]; then fail "remocao requer root"; fi
+        name="$2"
+        valid_name "$name" || fail "nome de pacote invalido"
+        file="$DB/$name.meta"
+        [ -f "$file" ] || fail "pacote nao instalado: $name"
+        version=$(meta_value "$file" version)
+        valid_version "$version" || fail "versao no banco local invalida"
+        dest="$PREFIX/$name/$version"
+        if [ -f "$dest/.binaries" ]; then
+            while IFS= read -r entry; do
+                [ -n "$entry" ] || continue
+                case "$entry" in *[!a-zA-Z0-9._+-]*) fail "registro de binario invalido" ;; esac
+                rm -f "$BIN/$entry"
+            done < "$dest/.binaries"
+        fi
+        rm -rf "$dest"
+        rmdir "$PREFIX/$name" 2>/dev/null || true
+        rm -f "$file"
+        echo "Removido: $name"
+        ;;
+    *)
+        usage >&2
+        fail "comando desconhecido: $cmd"
+        ;;
+esac

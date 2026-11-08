@@ -8,15 +8,15 @@ Este documento transforma a arquitetura em etapas verificáveis. O objetivo é u
 |---|---|
 | Núcleo C/C++ e ferramentas de diagnóstico | Protótipos no repositório |
 | Supervisor de serviços | Protótipo experimental |
-| Layout do rootfs | Documentado; staging não inicializável |
-| Toolchain e sysroot próprios | Não implementados |
-| Kernel e módulos por equipamento | Não compilados |
-| libc, shell e utilitários-base | Não integrados |
-| Gerenciador Pacman/libalpm | Planejado, não funcional |
-| Sessão gráfica | Protótipo de tela inicial/editor GTK4; sem compositor, login ou sessão de desktop funcional |
+| Rootfs Buildroot x86_64 (musl + BusyBox) | Configuração e pipeline adicionados; compilação/boot aguardando CI |
+| Toolchain e sysroot próprios | Toolchain musl Buildroot e compilação cruzada dos programas OverOS integradas; validação CI pendente |
+| Kernel e módulos por equipamento | Kernel x86_64 com fragmento de USB, ext4, EFI, Intel i915 e Broadcom b43; teste físico pendente |
+| libc, shell e utilitários-base | musl + BusyBox selecionados; validação de build pendente |
+| Gerenciador Specman | MVP local adicionado; CI de criação/instalação/remoção pendente; repositório assinado e dependências ainda faltam |
+| Sessão gráfica | Xfbdev + Openbox + xterm configurados; fallback de console; teste em hardware pendente |
 | Teclado virtual e touch | Layout ABNT2, perfil tablet e estilos versionados; backend Wayland ainda pendente |
 | Boot UEFI e Secure Boot | Planejado, sem cadeia validada |
-| Imagem USB persistente | Não implementada |
+| Imagem USB persistente | Gerador BIOS/UEFI consome rootfs Buildroot; CI/QEMU ainda pendentes |
 
 ## Etapa 0 — identificar os alvos
 
@@ -29,6 +29,10 @@ Não misturar os requisitos dos equipamentos. Cada perfil precisa de inventário
 **Aceite:** arquitetura e dispositivos identificados; nenhum disco interno alterado. Não presumir que os dois equipamentos usam a mesma arquitetura.
 
 ## Etapa 1 — toolchain e sysroot
+
+Primeira configuração adicionada em `buildroot/overos_x86_64_defconfig`. Ela seleciona x86_64, musl, BusyBox init, BusyBox userland e kernel Linux. `scripts/build-buildroot-rootfs.sh` baixa Buildroot 2025.02 e gera `out/overos-buildroot/rootfs.tar` e `bzImage`. Essa primeira configuração ainda precisa ser compilada no CI e validada em QEMU antes de ser considerada aprovada.
+
+
 
 - Escolher um triplet de destino explícito por perfil (por exemplo, x86_64 ou aarch64 somente após confirmação).
 - Construir ou selecionar uma toolchain cruzada reproduzível.
@@ -80,19 +84,19 @@ Evoluir init e supervisor antes de usá-los em produção:
 
 ## Etapa 5 — pacotes
 
-- Compilar libalpm e dependências para o mesmo sysroot/ABI.
+- Compilar e validar o Specman para o mesmo sysroot/ABI; o MVP atual é um script shell instalado no rootfs.
 - Criar ferramentas de repositório OverOS e metadados assinados.
-- Integrar primeiro comandos de consulta em `overosctl`.
-- Testar transações em rootfs descartável, com rollback e interrupção.
+- Evoluir o MVP para consultas de repositório e integração com `overosctl`.
+- Implementar assinatura do índice, resolução de dependências e transações com rollback; testar em rootfs descartável.
 - Só habilitar escrita depois de validar assinaturas, conflitos e recuperação.
 
-**Aceite:** instalação e remoção em ambiente descartável, sem executar scripts de pacote no host e sem tocar no disco interno.
+**Aceite:** assinatura verificada, instalação e remoção em ambiente descartável, rollback testado e sem tocar no disco interno.
 
 ## Etapa 6 — interface gráfica
 
 - Detectar GPU e aceleração disponível antes de escolher compositor.
 - Manter perfil econômico com fallback por software.
-- Evoluir o protótipo GTK4 `overos-desktop` para shell e componentes visuais reutilizáveis em C/C++.
+- A primeira sessão Openbox/Xfbdev já está configurada como desktop leve, com xterm e menu básico. Evoluir o protótipo GTK4 `overos-desktop` para shell e componentes visuais reutilizáveis em C/C++.
 - Integrar compositor, login/session manager, teclado virtual e início automático da sessão após o boot.
 - Suportar SVG, PNG/WebP, Cairo/Pango e, quando houver driver, OpenGL ES/Vulkan e GLSL.
 - Perfil touchscreen com alvos de toque de pelo menos 48 px, teclado virtual ABNT2 e navegação por teclado; backend de eventos ainda pendente.

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+  <resistance><strength>10</strength><screen_edge_strength>20</screen_edge_strength></resistance>
+  <focus><focusNew>yes</focusNew><followMouse>no</followMouse><focusLast>yes</focusLast><underMouse>no</underMouse><raiseOnFocus>no</raiseOnFocus></focus>
+  <desktops><number>1</number><firstdesk>1</firstdesk><names><name>OverOS</name></names><popupTime>0</popupTime></desktops>
+  <keyboard>
+    <keybind key="W-Return"><action name="Execute"><command>xterm</command></action></keybind>
+    <keybind key="W-n"><action name="Execute"><command>xterm -e nmtui</command></action></keybind>
+    <keybind key="W-q"><action name="Exit"/></keybind>
+  </keyboard>
+  <mouse>
+    <context name="Root"><mousebind button="Right" action="Press"><action name="ShowMenu"><menu>root-menu</menu></action></mousebind></context>
+  </mouse>
+  <applications/>
+</openbox_config>

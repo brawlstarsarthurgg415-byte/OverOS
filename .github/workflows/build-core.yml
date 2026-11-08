@@ -6,18 +6,28 @@ on:
     paths:
       - "core/**"
       - "rice/**"
+      - "overvault/**"
+      - "buildroot/**"
+      - "board/**"
       - "scripts/build-core.sh"
       - "scripts/check-build-host.sh"
       - "scripts/stage-rootfs.sh"
+      - "scripts/build-bootable-img.sh"
+      - "scripts/build-buildroot-rootfs.sh"
       - "scripts/test-rootfs-staging.sh"
       - "scripts/test-touch-assets.sh"
+      - "scripts/test-specman.sh"
       - "scripts/check-touchscreen.sh"
       - "scripts/check-secure-boot-tools.sh"
       - ".github/workflows/build-core.yml"
   workflow_dispatch:
 
+concurrency:
+  group: overos-custom-core-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -28,11 +38,18 @@ jobs:
       - name: Install native build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential cmake libgtk-4-dev
+          sudo apt-get install -y --no-install-recommends build-essential cmake libgtk-4-dev curl wget perl python3 cpio rsync bc bison flex file unzip libncurses-dev grub-pc-bin grub-efi-amd64-bin dosfstools parted e2fsprogs mtools qemu-system-x86 zstd
       - name: Check build host prerequisites
         run: bash scripts/check-build-host.sh
       - name: Validate touch and virtual keyboard assets
         run: bash scripts/test-touch-assets.sh
+      - name: Validate Specman package manager
+        run: bash scripts/test-specman.sh
+      - name: Validate shell scripts
+        run: |
+          sh -n board/overos/rootfs-overlay/usr/bin/specman
+          sh -n board/overos/rootfs-overlay/usr/bin/overos-gui
+          bash -n scripts/build-buildroot-rootfs.sh scripts/build-bootable-img.sh overvault/tools/build-fastfetch-package.sh overvault/tools/publish-repo.sh
       - name: Validate touchscreen diagnostic script
         run: bash -n scripts/check-touchscreen.sh
       - name: Inventory Secure Boot development tools (read-only)
@@ -43,6 +60,54 @@ jobs:
         run: bash scripts/stage-rootfs.sh
       - name: Verify staged rootfs layout
         run: bash scripts/test-rootfs-staging.sh
+      - name: Build independent Buildroot rootfs and Linux kernel
+        run: bash scripts/build-buildroot-rootfs.sh
+      - name: Verify first OverVault package
+        run: test -s out/overvault/x86_64/fastfetch-2.53.0-1-x86_64.pkg.tar.zst
+      - name: Upload OverVault package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OverVault-x86_64-fastfetch-${{ github.sha }}
+          path: out/overvault/x86_64/fastfetch-2.53.0-1-x86_64.pkg.tar.zst
+          if-no-files-found: error
+          retention-days: 30
+      - name: Build bootable raw image (BIOS + UEFI)
+        run: sudo bash scripts/build-bootable-img.sh
+      - name: Verify generated image exists and is non-empty
+        run: test -s out/OverOS-Custom.img
+      - name: Smoke-test boot in QEMU
+        shell: bash
+        run: |
+          set +e
+          timeout 90s qemu-system-x86_64 -m 1024 -drive file=out/OverOS-Custom.img,format=raw -nographic -monitor none -serial stdio -no-reboot > out/boot-test.log 2>&1
+          status=$?
+          set -e
+          if ! grep -q 'OverOS Custom' out/boot-test.log; then
+            tail -n 120 out/boot-test.log
+            echo 'A imagem nao chegou ao console do OverOS dentro do teste QEMU.' >&2
+            exit 1
+          fi
+          echo 'Imagem inicializavel: banner OverOS Custom detectado no console serial.'
+      - name: Publish raw IMG release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: overos-custom-dev-${{ github.run_number }}
+          name: OverOS Custom Dev ${{ github.run_number }}
+          body: |
+            Imagem raw inicializavel do OverOS Custom para testes.
+            Testada por smoke test no QEMU; ainda e uma imagem de desenvolvimento, nao a distribuicao independente final.
+            Inclui rootfs BusyBox/musl, kernel Linux, Pacman/libalpm em compilacao para musl, Specman MVP, rede e desktop leve construidos com Buildroot. Repositorio assinado, Secure Boot e compatibilidade com hardware real ainda nao foram validados.
+          prerelease: true
+          files: out/OverOS-Custom.img
+          fail_on_unmatched_files: true
+      - name: Upload bootable image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OverOS-Custom-img-${{ github.sha }}
+          path: out/OverOS-Custom.img
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
       - name: Upload native binaries
         uses: actions/upload-artifact@v4
         with:

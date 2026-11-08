@@ -17,7 +17,7 @@ Este diretório inicia a implementação nativa do OverOS. O objetivo é constru
 3. Root filesystem próprio, com init e serviços do OverOS.
 4. Rede, áudio, armazenamento, firmware e entrada.
 5. Sessão gráfica modular: compositor e shell escolhidos após testes de GPU.
-6. Gerenciador de pacotes: integração com libalpm/Pacman será feita depois que glibc, libarchive, curl, openssl, zstd e o formato de pacotes estiverem definidos e testados. Não declarar Pacman operacional antes disso.
+6. Gerenciador de pacotes próprio Specman; o MVP local já cria, instala e remove pacotes isolados com verificação SHA-256, sem scripts de pacote.
 
 ## Código inicial e staging
 
@@ -37,6 +37,10 @@ O plano técnico de boot, UEFI, Secure Boot, imagem externa e critérios de test
 ## Secure Boot
 
 A política de confiança, assinatura, proteção das chaves e testes está em [`SECURE-BOOT.md`](SECURE-BOOT.md). O preflight de ferramentas é somente leitura: `bash scripts/check-secure-boot-tools.sh`. Isso não instala ferramentas, não cria chaves e não ativa Secure Boot no hardware.
+
+## Interface gráfica leve
+
+A primeira imagem Buildroot inclui Xfbdev, Openbox, xterm e o comando `overos-gui`, com fallback para console. NetworkManager/nmtui é apresentado no primeiro login do tty1. A compatibilidade de vídeo e rede ainda precisa ser testada no hardware real.
 
 ## Interface inicial GTK4
 
@@ -58,4 +62,4 @@ cmake -S core -B core/build -DCMAKE_BUILD_TYPE=Release
 cmake --build core/build --parallel
 ```
 
-Os binários resultantes são protótipos de componentes; ainda não formam uma imagem inicializável. Não instalar em disco interno. A imagem USB só será preparada depois de fechar o boot UEFI/Secure Boot e os testes de hardware.
+Os binários nativos são compilados também para o sysroot musl durante `scripts/build-buildroot-rootfs.sh` e copiados para o rootfs Buildroot. A árvore `out/rootfs-staging/` continua sendo apenas um artefato de desenvolvimento; a imagem de disco é gerada separadamente e só deve ser usada depois dos testes de CI/QEMU e hardware.

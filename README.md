@@ -9,7 +9,7 @@
 - Construir um root filesystem próprio a partir de componentes individuais.
 - Não usar uma imagem pronta de Debian, Arch ou Ubuntu como sistema final.
 - Desenvolver serviços e ferramentas principalmente em C e C++.
-- Integrar Pacman/libalpm como gerenciador de pacotes planejado, sem transformar o OverOS em Arch Linux.
+- Desenvolver o gerenciador próprio Specman, sem depender do gerenciador de outra distribuição.
 - Oferecer uma interface visual moderna, com perfil leve e fallback de console.
 - Inicializar primeiro por USB, com persistência, sem instalador e sem modificar o disco interno.
 - Avaliar dual boot opcional com Windows 10 somente depois de validar boot, Secure Boot, backup e recuperação; ver `core/DUAL-BOOT-WINDOWS.md`.
@@ -24,7 +24,7 @@
 - Pacotes assinados e repositório próprio.
 - Sessão gráfica modular, com perfil touchscreen e fallback para hardware legado.
 
-O uso de uma distribuição Linux como máquina hospedeira de desenvolvimento não significa que ela será a base do sistema final.
+O uso de Ubuntu no runner do GitHub Actions serve apenas como máquina hospedeira de desenvolvimento. O rootfs de destino agora é construído pelo Buildroot com BusyBox e musl; Debian não é usado como sistema-base da imagem.
 
 ## Estado real do desenvolvimento
 
@@ -37,13 +37,16 @@ O uso de uma distribuição Linux como máquina hospedeira de desenvolvimento n�
 - [x] Biblioteca de componentes visuais e perfil touch documentados.
 - [x] Script de inventário touchscreen Linux somente leitura.
 - [ ] Build validado pelo CI e testes automatizados aprovados para o HEAD atual.
-- [ ] Toolchain/sysroot independente.
-- [ ] Kernel e drivers compilados para cada perfil.
-- [ ] libc e utilitários-base integrados.
-- [ ] Init de produção e supervisão de serviços.
-- [ ] Pacman/libalpm compilados e integrados.
-- [ ] Interface gráfica funcional.
-- [ ] Imagem USB inicializável, assinada e testada.
+- [x] Configuração Buildroot para toolchain musl, kernel Linux e rootfs BusyBox x86_64.
+- [x] Compilação cruzada dos programas nativos OverOS integrada ao fluxo Buildroot.
+- [x] Configuração inicial de NetworkManager/nmtui, OpenSSH, Xfbdev, Openbox e xterm.
+- [x] Specman MVP local com pacote .spkg, SHA-256 obrigatório e testes automatizados.
+- [ ] Pacman/libalpm 7.0.0 compilado para musl e integrado à imagem; validação pendente no CI. Pacotes Arch/glibc não são compatíveis; instalação local de pacotes OverOS é o primeiro alvo.
+- [ ] Repositório Specman assinado, dependências e rollback.
+- [ ] Validar build completo e boot em QEMU no CI.
+- [ ] Validar drivers, rede, touch e interface no hardware real.
+- [ ] Evoluir init e supervisor para produção.
+- [ ] Validar imagem USB persistente e Secure Boot.
 - [ ] Dual boot opcional com Windows 10 projetado, testado e reversível (bloqueado até concluir os critérios de `core/DUAL-BOOT-WINDOWS.md`).
 
 ## Pastas importantes
@@ -66,4 +69,4 @@ Nenhum script de build deve selecionar ou formatar discos físicos automaticamen
 
 ## Aviso
 
-O projeto ainda não é um sistema operacional pronto para uso diário. Os programas atuais são protótipos de espaço de usuário; o init ainda não deve ser usado como PID 1 em uma máquina real. Consulte `core/BUILDING.md` e `core/ROOTFS-LAYOUT.md`.
+O projeto ainda não é um sistema operacional pronto para uso diário. A rota Buildroot, o desktop leve e o Specman MVP foram adicionados ao código. A imagem ainda precisa passar pelo CI e por testes de boot antes de ser considerada funcional. Os programas atuais são protótipos de espaço de usuário; o init ainda não deve ser usado como PID 1 em uma máquina real. Consulte `core/BUILDING.md` e `core/ROOTFS-LAYOUT.md`.
