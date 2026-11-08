@@ -18,4 +18,4 @@ A interface não será feita com uma única linguagem. Cada tecnologia terá uma
 - Não incluir dependência de GPU não identificada.
 - Não carregar imagens gigantes na memória sem necessidade.
 
-Esta é a direção técnica; o compositor e toolkit definitivos serão selecionados após confirmar o hardware e compilar um protótipo testável.
+GTK4 foi selecionado para o primeiro protótipo de shell nativo, com build opcional via CMake. O protótipo `overos-desktop` inclui tela inicial e editor de interface touch-friendly. Ainda faltam compositor Wayland, gerenciamento de sessão/login, integração do teclado virtual e validação de GPU, RAM e touch nos equipamentos reais. GTK4 não é ainda uma sessão de desktop completa.
