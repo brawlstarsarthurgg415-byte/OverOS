@@ -23,7 +23,7 @@ Os binários ficam em `out/core-build/`. O script também executa os testes CTes
 - `overos-init`: protótipo de PID 1; instalado em `sbin/`, mas não deve ser usado como init de produção.
 - `overos-hardware-info`: inventário de hardware somente leitura.
 - `overos-session`: primeira sessão de console com menu nativo, instalada em `sbin/`.
-- `overosctl` e `overos-hardware-info`: ferramentas de diagnóstico instaladas em `bin/`.
+- `overosctl` e `overos-hardware-info`: ferramentas de diagnóstico instaladas em `bin/`.\n- `overos-supervisor`: supervisor experimental de serviços, instalado em `sbin/`; ainda não é iniciado pelo PID 1.
 
 ## Aviso
 
