@@ -6,6 +6,7 @@ on:
     paths:
       - "rice/**"
       - "scripts/test-astal-scaffold.sh"
+      - "scripts/validate-gtk-css.c"
       - ".github/workflows/validate-daten-astal.yml"
   pull_request:
     branches: [daten-usb-astal]
