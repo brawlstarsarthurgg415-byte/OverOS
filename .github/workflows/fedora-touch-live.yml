@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - "fedora/**"
+      - "scripts/**"
       - ".github/workflows/fedora-touch-live.yml"
 
 permissions:
@@ -24,52 +25,11 @@ jobs:
             exit 1
           fi
 
-      - name: Build live ISO in an isolated Fedora VM
-        run: |
-          docker run --rm \
-            --privileged \
-            --device /dev/kvm \
-            --security-opt label=disable \
-            -v "$PWD:/work" -w /work \
-            fedora:latest bash -euxo pipefail -c '
-              dnf -y install lorax-lmc-novirt pykickstart anaconda-tui anaconda-core \
-                lorax lsof squashfs-tools xorriso grub2-efi-x64 shim-x64 \
-                qemu-kvm qemu-img edk2-ovmf virt-install libvirt-client curl
-
-              mkdir -p /work/downloads
-              ISO_DIR="https://download.fedoraproject.org/pub/fedora/linux/releases/45/Everything/x86_64/iso"
-              ISO_NAME="$(curl --fail --location --retry 3 --silent --show-error "$ISO_DIR/" | grep -oE "Fedora-Everything-netinst-x86_64-45-[^<>[:space:]]+\\.iso" | sort -V | tail -n 1)"
-              if [ -z "$ISO_NAME" ]; then
-                echo "Não foi possível localizar a ISO netinst do Fedora 45 no diretório oficial." >&2
-                exit 1
-              fi
-              curl --fail --location --retry 3 "$ISO_DIR/$ISO_NAME" --output /work/downloads/Fedora-Everything-netinst.iso
-
-              test -s /usr/share/edk2/ovmf/OVMF_CODE.fd
-              test -e /dev/kvm
-
-              if ! livemedia-creator \
-                --make-iso \
-                --virt \
-                --iso /work/downloads/Fedora-Everything-netinst.iso \
-                --ks fedora/touch-live.ks \
-                --project "Fedora Touch Live" \
-                --releasever 45 \
-                --resultdir /work/out \
-                --volid FEDORA_TOUCH; then
-                echo "===== LIVEMEDIA-CREATOR DIAGNOSTICS ====="
-                for log in /work/virt-install.log /work/out/*.log /work/out/*/*.log; do
-                  if [ -f "$log" ]; then
-                    echo "===== $log (last 250 lines) ====="
-                    tail -n 250 "$log"
-                  fi
-                done
-                echo "===== DISCOVERED LOG FILES ====="
-                find /work -maxdepth 5 -type f \\( -iname "*.log" -o -iname "*anaconda*" \\) -print
-                exit 1
-              fi
-              ls -lh /work/out
-            '
+      - name: Build ISO with bounded AI repair
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-4.1-mini
+        run: bash scripts/build-with-ai-repair.sh
 
       - name: Install ISO editing utility
         run: |
@@ -77,8 +37,7 @@ jobs:
           sudo apt-get install -y xorriso
 
       - name: Apply OverOS GRUB defaults
-        run: |
-          bash fedora/grub/patch-iso-grub.sh out
+        run: bash fedora/grub/patch-iso-grub.sh out
 
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
@@ -86,4 +45,13 @@ jobs:
           name: fedora-touch-live-iso
           path: out/*.iso
           if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fedora-build-diagnostics
+          path: out/*.log
+          if-no-files-found: ignore
           retention-days: 7
