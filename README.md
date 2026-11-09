@@ -30,7 +30,7 @@ O uso de Ubuntu no runner do GitHub Actions serve apenas como máquina hospedeir
 
 <badge color="warning">Prototipagem inicial</badge>
 
-- [x] Branch de desenvolvimento isolada: `overos-custom-core`.
+- [x] Branch de desenvolvimento DATEN isolada: `daten-usb-astal` (sem alterações em `main`).
 - [x] Primeiros programas nativos em C e C++.
 - [x] Compilação CMake e testes CTest configurados.
 - [x] Arquitetura inicial de rootfs, toolchain, pacotes e USB documentada.
@@ -48,7 +48,7 @@ O uso de Ubuntu no runner do GitHub Actions serve apenas como máquina hospedeir
 - [ ] Evoluir init e supervisor para produção.
 - [ ] Validar imagem USB e Secure Boot; perfil específico do tablet DATEN em `docs/DATEN-USB-ASTAL.md`.
 - [ ] Integrar e testar Wayland + Hyprland como sessão gráfica, com Astal/GTK4 para shell e widgets; os arquivos CSS em `rice/` são apenas a base visual.
-- [ ] Dual boot opcional com Windows 10 projetado, testado e reversível (bloqueado até concluir os critérios de `core/DUAL-BOOT-WINDOWS.md`).
+- [ ] Dual boot não faz parte da etapa USB-first; nenhuma alteração no boot interno será feita nesta fase.
 
 ## Pastas importantes
 
@@ -60,7 +60,7 @@ O uso de Ubuntu no runner do GitHub Actions serve apenas como máquina hospedeir
 
 ## Hardware alvo
 
-O Intelbras i30 é um alvo legado experimental. A GPU SiS Mirage 3+ ainda não foi confirmada. O tablet DATEN será testado por USB, preservando o Windows 11 e mantendo Secure Boot ativado. Consulte `docs/DATEN-USB-ASTAL.md`. Modelo, CPU, RAM, arquitetura UEFI, GPU, controlador touchscreen e Wi-Fi precisam ser identificados antes de prometer compatibilidade.
+O Intelbras i30 é um alvo legado experimental. A GPU SiS Mirage 3+ ainda não foi confirmada. O tablet DATEN será testado por USB, preservando o Windows 11 e mantendo Secure Boot ativado. A imagem raw atual usa GRUB sem cadeia assinada validada e, portanto, não está liberada para boot com Secure Boot. Consulte `docs/DATEN-USB-ASTAL.md`. Modelo, CPU, RAM, arquitetura UEFI, GPU, controlador touchscreen e Wi-Fi precisam ser identificados antes de prometer compatibilidade.
 
 Para inventariar a entrada em um Linux iniciado no equipamento, execute `bash scripts/check-touchscreen.sh`. O script não instala drivers nem altera o dispositivo; consulte `core/TOUCHSCREEN-DIAGNOSTICS.md`.
 
