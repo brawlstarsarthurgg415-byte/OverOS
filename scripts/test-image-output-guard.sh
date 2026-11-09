@@ -5,8 +5,8 @@ ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$ROOT/out"
 TMP_DIR="$(mktemp -d)"
 LOG="$TMP_DIR/rejection.log"
-LINK="$OUT/.image-output-guard-test-link"
-TARGET="$OUT/.image-output-guard-test-target"
+LINK="$OUT/.image-output-guard-test-link-$"
+TARGET="$OUT/.image-output-guard-test-target-$"
 
 cleanup() {
   rm -f "$LINK" "$TARGET"
