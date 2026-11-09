@@ -16,17 +16,25 @@ jobs:
     timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
-      - name: Build live ISO in Fedora container
+      - name: Check KVM availability
         run: |
-          mkdir -p "$PWD/out"
-          docker run --privileged --rm \
+          if [ ! -e /dev/kvm ]; then
+            echo "::error::KVM (/dev/kvm) is unavailable on this runner; refusing an unsafe no-virt build."
+            exit 1
+          fi
+      - name: Build live ISO in an isolated Fedora VM
+        run: |
+          docker run --rm \
+            --device /dev/kvm \
+            --cap-add SYS_ADMIN \
+            --security-opt label=disable \
             -v "$PWD:/work" -w /work \
             fedora:latest bash -euxo pipefail -c '
               dnf -y install lorax-lmc-novirt pykickstart anaconda-tui anaconda-core \
                 lorax lsof squashfs-tools xorriso grub2-efi-x64 shim-x64
               livemedia-creator \
                 --make-iso \
-                --no-virt \
+                --virt \
                 --ks fedora/touch-live.ks \
                 --project "Fedora Touch Live" \
                 --releasever 45 \
