@@ -23,6 +23,10 @@ This is not an Arch Linux installation. The system remains the independent Build
 
 The dedicated GitHub Actions workflow validates the GJS module's JavaScript syntax, parses the GTK4 stylesheet tree with GTK itself, and installs the shell assets plus desktop entry through Meson using the target `/usr` prefix. This is a scaffold/asset validation only; it does not execute the Astal app or build the compositor/runtime.
 
+## Buildroot dependency audit
+
+The upstream Buildroot 2025.02 package inventory was checked. It has useful Wayland/graphics building blocks, but no direct upstream recipes for GTK 4, GJS, Astal or Hyprland. See [BUILDROOT-DESKTOP-DEPENDENCY-AUDIT.md](BUILDROOT-DESKTOP-DEPENDENCY-AUDIT.md) before attempting target integration.
+
 ## Integration gates still open
 
 The repository's current Buildroot configuration is Xorg/Openbox/Xfbdev-oriented. Hyprland is not currently built or integrated. The Astal runtime and its exact GJS/GTK4/Astal dependency versions are not yet packaged in the Buildroot image. Do not mark this shell as runnable until the runtime is built and a smoke test succeeds.
