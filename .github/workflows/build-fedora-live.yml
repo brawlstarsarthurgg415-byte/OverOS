@@ -1,0 +1,49 @@
+name: Build Fedora GNOME + Hyprland Live ISO
+on:
+  workflow_dispatch:
+  push:
+    branches: [fedora-gnome-hyprland-touch]
+    paths:
+      - 'fedora/**'
+      - '.github/workflows/build-fedora-live.yml'
+permissions:
+  contents: read
+concurrency:
+  group: fedora-live-iso
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Prepare output
+        run: mkdir -p out/fedora-iso
+      - name: Build custom Fedora Live ISO
+        run: |
+          docker run --privileged --rm \
+            -v "$PWD:/work" -w /work \
+            fedora:latest bash -euxo pipefail -c '
+              dnf -y install lorax-lmc-novirt fedora-kickstarts pykickstart git \
+                lorax anaconda-tui anaconda-core anaconda-gui
+              livemedia-creator \
+                --make-iso \
+                --ks /work/fedora/overos-live.ks \
+                --no-virt \
+                --resultdir /work/out/fedora-iso \
+                --project OverOS-Fedora \
+                --releasever 43 \
+                --volid OVEROS_FEDORA
+            '
+      - name: List build output
+        if: always()
+        run: find out/fedora-iso -maxdepth 2 -type f -printf '%p %s bytes\n' || true
+      - name: Upload ISO artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OverOS-Fedora-GNOME-Hyprland-Live
+          path: out/fedora-iso/*.iso
+          if-no-files-found: error
+          retention-days: 7
