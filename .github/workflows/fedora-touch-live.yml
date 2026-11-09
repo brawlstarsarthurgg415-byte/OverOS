@@ -16,12 +16,14 @@ jobs:
     timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
+
       - name: Check KVM availability
         run: |
           if [ ! -e /dev/kvm ]; then
             echo "::error::KVM (/dev/kvm) is unavailable on this runner; refusing an unsafe no-virt build."
             exit 1
           fi
+
       - name: Build live ISO in an isolated Fedora VM
         run: |
           docker run --rm \
@@ -31,10 +33,21 @@ jobs:
             -v "$PWD:/work" -w /work \
             fedora:latest bash -euxo pipefail -c '
               dnf -y install lorax-lmc-novirt pykickstart anaconda-tui anaconda-core \
-                lorax lsof squashfs-tools xorriso grub2-efi-x64 shim-x64
+                lorax lsof squashfs-tools xorriso grub2-efi-x64 shim-x64 \
+                qemu-kvm qemu-img edk2-ovmf virt-install libvirt-client curl
+
+              mkdir -p /work/downloads
+              curl --fail --location --retry 3 \
+                https://download.fedoraproject.org/pub/fedora/linux/releases/45/Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-45-1.1.iso \
+                --output /work/downloads/Fedora-Everything-netinst.iso
+
+              test -s /usr/share/edk2/ovmf/OVMF_CODE.fd
+              test -e /dev/kvm
+
               livemedia-creator \
                 --make-iso \
                 --virt \
+                --iso /work/downloads/Fedora-Everything-netinst.iso \
                 --ks fedora/touch-live.ks \
                 --project "Fedora Touch Live" \
                 --releasever 45 \
@@ -42,13 +55,16 @@ jobs:
                 --volid FEDORA_TOUCH
               ls -lh /work/out
             '
+
       - name: Install ISO editing utility
         run: |
           sudo apt-get update
           sudo apt-get install -y xorriso
+
       - name: Apply OverOS GRUB defaults
         run: |
           bash fedora/grub/patch-iso-grub.sh out
+
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
