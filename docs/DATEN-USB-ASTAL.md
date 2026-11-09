@@ -40,14 +40,16 @@ Registrar modelo exato, CPU, RAM, arquitetura do firmware UEFI (x64 ou IA32), GP
 - Começar sem persistência; adicionar partição persistente somente depois de o boot básico estar estável.
 - Nenhuma etapa pode tocar no disco interno do tablet.
 
-### 4. Astal e identidade visual
+### 4. Wayland, Hyprland, Astal e identidade visual
 
-- Reutilizar os tokens e componentes de `rice/astal.css` e `rice/components.css`.
-- Integrar um shell Astal/GTK4 real ao rootfs; CSS sozinho não é um desktop.
-- Verificar disponibilidade e tamanho das dependências no Buildroot (GTK4, bindings/runtime usados pelo Astal, bibliotecas e serviços).
-- Criar um perfil touchscreen com alvos de toque grandes, painel, launcher, status e configurações.
-- Manter animações e transparências opcionais, com modo econômico.
-- Se Astal não couber no hardware ou na cadeia de dependências, manter o console de recuperação e só então avaliar um shell GTK4 mínimo alternativo; não substituir silenciosamente o requisito visual.
+- Usar Wayland como protocolo de sessão e Hyprland como compositor/gerenciador de janelas, condicionado à compatibilidade real da GPU e do driver DRM/KMS.
+- Usar Astal/GTK4 para painel, launcher, widgets, notificações e controles próprios do OverOS. Astal não substitui o compositor: ele funciona junto ao Hyprland.
+- Reutilizar os tokens e componentes de `rice/astal.css` e `rice/components.css`; CSS sozinho não constitui uma sessão gráfica.
+- Verificar no Buildroot a disponibilidade e o custo de todas as dependências: Hyprland, wlroots/ecossistema necessário, Wayland, GTK4, bindings/runtime do Astal, bibliotecas gráficas, fontes e serviços de sessão. Não assumir que os pacotes estão disponíveis ou integrados.
+- Implementar primeiro uma sessão mínima Wayland/Hyprland em ambiente de teste; depois iniciar o shell Astal como componente separado.
+- Criar perfil touchscreen com alvos grandes, launcher, painel, status, teclado virtual e configurações.
+- Manter animações, blur e transparências opcionais; oferecer modo econômico e fallback de console/recuperação.
+- Se o driver gráfico ou a RAM não suportarem Hyprland, registrar a limitação e propor alternativa Wayland leve sem remover o requisito de interface personalizada sem aprovação do usuário.
 
 ### 5. Secure Boot e teste físico
 
@@ -62,6 +64,8 @@ O firmware precisa confiar no primeiro executável EFI e na cadeia subsequente. 
 - [ ] Boot pelo pendrive confirmado no tablet.
 - [ ] Windows 11 e armazenamento interno permanecem inalterados.
 - [ ] Touch, vídeo, Wi-Fi, áudio e suspensão avaliados separadamente.
-- [ ] Astal inicia como sessão gráfica real e o modo econômico funciona.
+- [ ] Wayland + Hyprland iniciam com o driver gráfico correto.
+- [ ] Astal inicia como shell/widgets reais dentro da sessão Wayland.
+- [ ] Touch, teclado virtual, modo econômico e fallback de recuperação funcionam.
 
 Até todos os critérios aplicáveis serem verificados, o artefato deve ser identificado como imagem experimental, não como sistema pronto.
