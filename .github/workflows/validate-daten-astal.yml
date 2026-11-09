@@ -8,8 +8,6 @@ on:
       - "scripts/test-astal-scaffold.sh"
       - "scripts/test-image-output-guard.sh"
       - "scripts/build-bootable-img.sh"
-      - "scripts/test-image-output-guard.sh"
-      - "scripts/build-bootable-img.sh"
       - "scripts/validate-gtk-css.c"
       - ".github/workflows/validate-daten-astal.yml"
   pull_request:
@@ -17,6 +15,8 @@ on:
     paths:
       - "rice/**"
       - "scripts/test-astal-scaffold.sh"
+      - "scripts/test-image-output-guard.sh"
+      - "scripts/build-bootable-img.sh"
       - ".github/workflows/validate-daten-astal.yml"
   workflow_dispatch:
 
