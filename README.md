@@ -47,7 +47,7 @@ O uso de Ubuntu no runner do GitHub Actions serve apenas como máquina hospedeir
 - [ ] Validar drivers, rede, touch e interface no hardware real.
 - [ ] Evoluir init e supervisor para produção.
 - [ ] Validar imagem USB e Secure Boot; perfil específico do tablet DATEN em `docs/DATEN-USB-ASTAL.md`.
-- [ ] Integrar e testar uma sessão Astal/GTK4 real; os arquivos CSS em `rice/` são apenas a base visual.
+- [ ] Integrar e testar Wayland + Hyprland como sessão gráfica, com Astal/GTK4 para shell e widgets; os arquivos CSS em `rice/` são apenas a base visual.
 - [ ] Dual boot opcional com Windows 10 projetado, testado e reversível (bloqueado até concluir os critérios de `core/DUAL-BOOT-WINDOWS.md`).
 
 ## Pastas importantes
