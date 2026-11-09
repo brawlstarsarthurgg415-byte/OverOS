@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=OverOS Shell
 Comment=Interface personalizada do OverOS
-Exec=astal -i overos-shell
+Exec=gjs -m /usr/share/overos-shell/app.js
 Icon=computer
 Terminal=false
 Type=Application
