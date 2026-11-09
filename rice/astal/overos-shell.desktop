@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=OverOS Shell
+Comment=Interface personalizada do OverOS
+Exec=astal -i overos-shell
+Icon=computer
+Terminal=false
+Type=Application
+Categories=System;Utility;
+StartupNotify=true
