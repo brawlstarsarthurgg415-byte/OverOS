@@ -28,6 +28,6 @@ jobs:
       - name: Install validation tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends nodejs meson ninja-build libgtk-4-dev pkg-config
+          sudo apt-get install -y --no-install-recommends nodejs meson ninja-build libgtk-4-dev pkg-config desktop-file-utils
       - name: Validate JavaScript and installable assets
         run: bash scripts/test-astal-scaffold.sh
