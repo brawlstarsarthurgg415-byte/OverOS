@@ -37,9 +37,13 @@ jobs:
                 qemu-kvm qemu-img edk2-ovmf virt-install libvirt-client curl
 
               mkdir -p /work/downloads
-              curl --fail --location --retry 3 \
-                https://download.fedoraproject.org/pub/fedora/linux/releases/45/Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-45-1.1.iso \
-                --output /work/downloads/Fedora-Everything-netinst.iso
+              ISO_DIR="https://download.fedoraproject.org/pub/fedora/linux/releases/45/Everything/x86_64/iso"
+              ISO_NAME="$(curl --fail --location --retry 3 --silent --show-error "$ISO_DIR/" | grep -oE 'Fedora-Everything-netinst-x86_64-45-[^"<> ]+\\.iso' | sort -V | tail -n 1)"
+              if [ -z "$ISO_NAME" ]; then
+                echo "Não foi possível localizar a ISO netinst do Fedora 45 no diretório oficial." >&2
+                exit 1
+              fi
+              curl --fail --location --retry 3 "$ISO_DIR/$ISO_NAME" --output /work/downloads/Fedora-Everything-netinst.iso
 
               test -s /usr/share/edk2/ovmf/OVMF_CODE.fd
               test -e /dev/kvm
