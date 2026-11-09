@@ -12,7 +12,7 @@
 - Desenvolver o gerenciador próprio Specman, sem depender do gerenciador de outra distribuição.
 - Oferecer uma interface visual moderna, com perfil leve e fallback de console.
 - Inicializar primeiro por USB, com persistência, sem instalador e sem modificar o disco interno.
-- Avaliar dual boot opcional com Windows 10 somente depois de validar boot, Secure Boot, backup e recuperação; ver `core/DUAL-BOOT-WINDOWS.md`.
+- Priorizar boot externo por USB, sem instalador e sem alterar o Windows 11 nem o armazenamento interno do tablet DATEN; dual boot fica fora da primeira etapa.
 - Manter Secure Boot habilitado nos equipamentos que serão testados com ele.
 
 ## Arquitetura
@@ -46,7 +46,8 @@ O uso de Ubuntu no runner do GitHub Actions serve apenas como máquina hospedeir
 - [ ] Validar build completo e boot em QEMU no CI.
 - [ ] Validar drivers, rede, touch e interface no hardware real.
 - [ ] Evoluir init e supervisor para produção.
-- [ ] Validar imagem USB persistente e Secure Boot.
+- [ ] Validar imagem USB e Secure Boot; perfil específico do tablet DATEN em `docs/DATEN-USB-ASTAL.md`.
+- [ ] Integrar e testar uma sessão Astal/GTK4 real; os arquivos CSS em `rice/` são apenas a base visual.
 - [ ] Dual boot opcional com Windows 10 projetado, testado e reversível (bloqueado até concluir os critérios de `core/DUAL-BOOT-WINDOWS.md`).
 
 ## Pastas importantes
@@ -59,7 +60,7 @@ O uso de Ubuntu no runner do GitHub Actions serve apenas como máquina hospedeir
 
 ## Hardware alvo
 
-O Intelbras i30 é um alvo legado experimental. A GPU SiS Mirage 3+ ainda não foi confirmada. O tablet DATEN será testado por USB, preservando o Windows e mantendo Secure Boot ativado. Modelo, CPU, RAM, arquitetura UEFI, GPU, controlador touchscreen e Wi-Fi precisam ser identificados antes de prometer compatibilidade.
+O Intelbras i30 é um alvo legado experimental. A GPU SiS Mirage 3+ ainda não foi confirmada. O tablet DATEN será testado por USB, preservando o Windows 11 e mantendo Secure Boot ativado. Consulte `docs/DATEN-USB-ASTAL.md`. Modelo, CPU, RAM, arquitetura UEFI, GPU, controlador touchscreen e Wi-Fi precisam ser identificados antes de prometer compatibilidade.
 
 Para inventariar a entrada em um Linux iniciado no equipamento, execute `bash scripts/check-touchscreen.sh`. O script não instala drivers nem altera o dispositivo; consulte `core/TOUCHSCREEN-DIAGNOSTICS.md`.
 
