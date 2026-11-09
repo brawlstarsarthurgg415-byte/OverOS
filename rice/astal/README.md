@@ -1,32 +1,31 @@
 # OverOS Astal Shell
 
-This directory is the implementation home for the OverOS desktop shell, inspired by the layout density and modularity of Matshell while keeping an original OverOS identity.
+Este diretório contém o primeiro protótipo de interface GTK4/GJS do OverOS. A direção visual é original e usa Matshell apenas como referência de organização modular — não como código ou identidade para copiar.
 
-## Planned first screen
+## O que o protótipo já contém
 
-- Compact top status panel: clock, workspace indicator, network and battery state.
-- Touch-friendly application launcher with large targets.
-- Control center for brightness, audio, network and power actions (only when supported).
-- Notification surface and a clear exit/recovery path.
-- Responsive layout for tablet portrait/landscape and conventional desktop.
+- Janela principal com identidade visual OverOS.
+- Relógio local.
+- Launcher que enumera aplicativos instalados via Gio e permite pesquisar.
+- Painel lateral com ações de configurações e bloqueio de sessão (dependem dos serviços disponíveis).
+- Estilos GTK4 em `overos-shell.css`, `astal.css` e `components.css`.
 
-## Runtime contract
+## Separação das camadas
 
-Astal is the shell/widget layer; Hyprland is the compositor. They are separate processes.
-The shell must not be required to start the compositor or expose a recovery terminal.
+Astal/GJS é a camada de shell e widgets; Hyprland é o compositor Wayland. São componentes separados. O protótipo atual cria uma janela GTK normal: ainda não é uma camada de painel/overlay ancorada ao compositor, nem substitui a sessão gráfica padrão.
 
-The eventual entry point will use the Astal GTK4 runtime and installed Astal libraries.
-Do not guess package versions or copy a GTK3 example into this GTK4 shell. Confirm the
-Astal API version, GJS bindings and Buildroot dependency closure before adding executable
-imports or a package recipe.
+## Perfis planejados
 
-## Resource profiles
+- **balanced:** transições discretas e sem blur.
+- **low-memory:** animações reduzidas e menos atualizações em segundo plano.
+- **touch:** alvos maiores, launcher em primeiro plano e teclado virtual.
 
-- balanced: subtle transitions; no blur; normal panel refresh.
-- low-memory: no blur/shadows, reduced animation, fewer background polls.
-- touch: larger hit targets, launcher-first navigation and on-screen keyboard integration.
+## Limitações atuais
 
-## Current status
+- O protótipo ainda não foi executado contra uma versão instalada do runtime Astal/GJS.
+- Astal, GTK4, GJS, Hyprland e as dependências Wayland ainda não estão empacotados na configuração Buildroot.
+- O arquivo de configuração Hyprland é experimental e não é ativado no boot.
+- Não há integração com o rootfs, imagem USB, teste QEMU ou teste no tablet.
+- A compatibilidade com touchscreen, GPU e Secure Boot do DATEN ainda não foi comprovada.
 
-Scaffold only. No Astal application entry point, package recipe, compositor binary or
-bootable image is claimed by this directory yet. See docs/DATEN-USB-ASTAL.md.
+O CI desta branch verifica sintaxe JavaScript e a instalação dos arquivos estáticos via Meson. Isso não equivale a compilar/validar o runtime Astal nem a testar a interface em hardware.
