@@ -64,10 +64,11 @@ for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
 
   mkdir -p out
   cp out/build.log "/tmp/overos-build-$RUN_ID-$attempt.log" 2>/dev/null || true
-  if git diff --quiet; then
+  git add -A -- . ':!out' ':!downloads'
+  if git diff --cached --quiet; then
     printf '\nAttempt %s: build failed without a working-tree patch.\n' "$attempt" >> "$HISTORY"
   else
-    { printf '\n===== FAILED PATCH FROM ATTEMPT %s (rolled back) =====\n' "$attempt"; git diff --no-ext-diff; } >> "$HISTORY"
+    { printf '\n===== FAILED PATCH FROM ATTEMPT %s (rolled back) =====\n' "$attempt"; git diff --cached --no-ext-diff; } >> "$HISTORY"
   fi
   if [[ -f "/tmp/overos-build-$RUN_ID-$attempt.log" ]]; then
     { printf '\n===== BUILD LOG ATTEMPT %s =====\n' "$attempt"; tail -c 50000 "/tmp/overos-build-$RUN_ID-$attempt.log"; } >> "$HISTORY"
