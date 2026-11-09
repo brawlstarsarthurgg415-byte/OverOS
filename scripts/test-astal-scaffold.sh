@@ -17,7 +17,9 @@ need ninja
 need cc
 need pkg-config
 
-echo "[1/4] Validando sintaxe JavaScript como módulo ES"
+mkdir -p "$ROOT/out"
+
+echo "[1/5] Validando sintaxe JavaScript como módulo ES"
 node --input-type=module --check < rice/astal/app.js
 
 echo "[2/5] Validando sintaxe dos estilos GTK4"
