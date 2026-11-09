@@ -16,7 +16,7 @@ docker run --rm \
     ISO_DIR="https://download.fedoraproject.org/pub/fedora/linux/releases/45/Everything/x86_64/iso"
     ISO_NAME="$(curl --fail --location --retry 3 --silent --show-error "$ISO_DIR/" | grep -oE "Fedora-Everything-netinst-x86_64-45-[^<>[:space:]]+\\.iso" | sort -V | tail -n 1)"
     if [ -z "$ISO_NAME" ]; then
-      echo "Não foi possível localizar a ISO netinst do Fedora 45 no diretório oficial." >&2
+      echo "Não foi possível localizar a ISO netinst do Fedora 45." >&2
       exit 1
     fi
     curl --fail --location --retry 3 "$ISO_DIR/$ISO_NAME" --output /work/downloads/Fedora-Everything-netinst.iso
@@ -32,3 +32,15 @@ docker run --rm \
       --logfile /work/out/livemedia-creator.log \
       --volid FEDORA_TOUCH
   ' 2>&1 | tee out/build.log
+
+sudo apt-get update
+sudo apt-get install -y xorriso
+bash fedora/grub/patch-iso-grub.sh out
+
+shopt -s nullglob
+isos=(out/*.iso)
+if [ "${#isos[@]}" -ne 1 ] || [ ! -s "${isos[0]}" ]; then
+  echo "Expected exactly one non-empty final ISO in out/." >&2
+  exit 1
+fi
+echo "Validated ISO: ${isos[0]} ($(stat -c%s "${isos[0]}") bytes)"

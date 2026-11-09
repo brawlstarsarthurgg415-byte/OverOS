@@ -9,7 +9,7 @@ on:
       - ".github/workflows/fedora-touch-live.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -17,41 +17,36 @@ jobs:
     timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Check KVM availability
         run: |
           if [ ! -e /dev/kvm ]; then
-            echo "::error::KVM (/dev/kvm) is unavailable on this runner; refusing an unsafe no-virt build."
+            echo "::error::KVM (/dev/kvm) is unavailable on this runner."
             exit 1
           fi
 
-      - name: Build ISO with bounded AI repair
+      - name: Build ISO with checkpointed AI repair
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: gpt-4.1-mini
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/build-with-ai-repair.sh
-
-      - name: Install ISO editing utility
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xorriso
-
-      - name: Apply OverOS GRUB defaults
-        run: bash fedora/grub/patch-iso-grub.sh out
 
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
-          name: fedora-touch-live-iso
+          name: overos-fedora-live-iso
           path: out/*.iso
           if-no-files-found: error
           retention-days: 7
 
-      - name: Upload build diagnostics
+      - name: Upload build and repair history
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: fedora-build-diagnostics
+          name: overos-build-diagnostics
           path: out/*.log
           if-no-files-found: ignore
           retention-days: 7

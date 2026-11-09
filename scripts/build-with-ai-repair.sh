@@ -1,30 +1,109 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-max_attempts=3
-attempt=1
-while (( attempt <= max_attempts )); do
-  echo "::group::OverOS build attempt $attempt/$max_attempts"
+MAX_ATTEMPTS=5
+RUN_ID="${GITHUB_RUN_ID:-local-$(date +%s)}"
+BRANCH="${GITHUB_REF_NAME:-main}"
+CHECKPOINT="recovery/overos-${RUN_ID}"
+HISTORY="/tmp/overos-repair-history-${RUN_ID}.txt"
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "::error::Checkout is not clean; refusing an unsafe recovery point."
+  exit 1
+fi
+BASE_SHA="$(git rev-parse HEAD)"
+git config user.name "OverOS AI Repair"
+git config user.email "overos-ai-repair@users.noreply.github.com"
+: > "$HISTORY"
+restore_checkpoint() { git reset --hard "$BASE_SHA"; git clean -fdx; }
+
+create_recovery_point() {
+  local tag="$1"
+  git tag -f "$tag" "$BASE_SHA" >/dev/null
+  if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+    encoded="$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)"
+    git -c "http.extraheader=AUTHORIZATION: basic $encoded" push origin "refs/tags/$tag"
+    unset encoded
+  else
+    echo "::error::Cannot publish recovery point without GITHUB_TOKEN."
+    return 1
+  fi
+}
+
+for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
+  echo "::group::Build attempt $attempt/$MAX_ATTEMPTS"
+  create_recovery_point "$CHECKPOINT/attempt-$attempt"
   if bash scripts/build-fedora-iso.sh; then
-    echo "Build completed successfully."
+    echo "ISO build and validation succeeded."
     echo "::endgroup::"
+    git add -A -- . ':!out' ':!downloads'
+    if ! git diff --cached --quiet; then
+      git diff --cached --check
+      git commit -m "AI repair: validated OverOS build [skip ci]"
+      if [[ -n "${GITHUB_TOKEN:-}" && -n "${GITHUB_REPOSITORY:-}" ]]; then
+        encoded="$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)"
+        if git -c "http.extraheader=AUTHORIZATION: basic $encoded" push origin "HEAD:$BRANCH"; then
+          echo "Validated AI repair was committed to $BRANCH."
+        else
+          echo "::warning::Build passed, but GitHub rejected the automatic push. ISO will still be uploaded."
+        fi
+        unset encoded
+      else
+        echo "::warning::No GitHub token available to persist the validated repair."
+      fi
+    fi
     exit 0
   else
     status=$?
   fi
   echo "::endgroup::"
   echo "::warning::Build attempt $attempt failed (exit $status)."
-  if (( attempt == max_attempts )); then
-    echo "::error::Automatic repair limit reached ($max_attempts attempts)."
+  if (( attempt == MAX_ATTEMPTS )); then
+    restore_checkpoint
+    echo "::error::Repair limit reached. Repository restored to checkpoint $BASE_SHA."
     exit "$status"
   fi
+
+  mkdir -p out
+  cp out/build.log "/tmp/overos-build-$RUN_ID-$attempt.log" 2>/dev/null || true
+  git add -A -- . ':!out' ':!downloads'
+  if git diff --cached --quiet; then
+    printf '\nAttempt %s: build failed without a working-tree patch.\n' "$attempt" >> "$HISTORY"
+  else
+    { printf '\n===== FAILED PATCH FROM ATTEMPT %s (rolled back) =====\n' "$attempt"; git diff --cached --no-ext-diff; } >> "$HISTORY"
+  fi
+  if [[ -f "/tmp/overos-build-$RUN_ID-$attempt.log" ]]; then
+    { printf '\n===== BUILD LOG ATTEMPT %s =====\n' "$attempt"; tail -c 50000 "/tmp/overos-build-$RUN_ID-$attempt.log"; } >> "$HISTORY"
+  fi
+  restore_checkpoint
+
   if [[ -z "${OPENAI_API_KEY:-}" ]]; then
-    echo "::error::OPENAI_API_KEY secret is missing. Add it in GitHub Actions secrets to enable AI repair."
+    echo "::error::OPENAI_API_KEY secret is missing. Repository remains at checkpoint."
     exit "$status"
   fi
-  if ! python3 scripts/ai_package_repair.py --log out/build.log --kickstart fedora/touch-live.ks; then
-    echo "::error::AI repair did not produce a safe, applicable package-list change."
-    exit "$status"
+  if ! python3 scripts/ai_repo_repair.py --log "/tmp/overos-build-$RUN_ID-$attempt.log" --history "$HISTORY" --output "/tmp/overos-repair-$RUN_ID.patch"; then
+    echo "::warning::AI could not produce a valid patch; trying another diagnosis."
+    printf '\nAttempt %s: AI returned no applicable patch.\n' "$attempt" >> "$HISTORY"
+    continue
   fi
-  attempt=$((attempt + 1))
+  if ! git apply --check "/tmp/overos-repair-$RUN_ID.patch"; then
+    echo "::warning::Patch failed validation; checkpoint restored."
+    printf '\nAttempt %s: git apply --check rejected the patch.\n' "$attempt" >> "$HISTORY"
+    continue
+  fi
+  if ! git apply "/tmp/overos-repair-$RUN_ID.patch"; then
+    restore_checkpoint
+    printf '\nAttempt %s: patch application failed and was rolled back.\n' "$attempt" >> "$HISTORY"
+    continue
+  fi
+  if ! git diff --check ||
+     ! find scripts -type f -name '*.sh' -print0 | xargs -0 -r -n1 bash -n ||
+     ! python3 -c 'import ast,pathlib; [ast.parse(p.read_text()) for p in pathlib.Path("scripts").rglob("*.py")]; print("Python syntax OK")'; then
+    echo "::warning::Static validation failed; reverting the entire AI change."
+    git diff --no-ext-diff >> "$HISTORY" || true
+    restore_checkpoint
+    printf '\nAttempt %s: static validation failed; patch rolled back.\n' "$attempt" >> "$HISTORY"
+    continue
+  fi
+  echo "AI patch applied after checkpoint. Next iteration tests it."
 done
+restore_checkpoint
 exit 1
