@@ -13,7 +13,7 @@ LOOP=""
 
 fail() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1 || fail "missing tool: $1"; }
-for tool in parted losetup mkfs.ext4 mkfs.vfat mount umount grub-install tar blkid; do need "$tool"; done
+for tool in parted losetup mkfs.ext4 mkfs.vfat mount umount grub-install tar blkid udevadm; do need "$tool"; done
 [ "$(uname -m)" = x86_64 ] || fail "the current image target requires an x86_64 build host"
 if [ ! -s "$ROOTFS_TAR" ] || [ ! -s "$KERNEL_IMAGE" ]; then
   bash "$ROOT/scripts/build-buildroot-rootfs.sh"

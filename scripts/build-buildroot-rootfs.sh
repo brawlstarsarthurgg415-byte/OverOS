@@ -13,9 +13,17 @@ BUILD="$OUT/buildroot-output"
 OVERLAY="$SOURCE/board/overos-rootfs-overlay"
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "Missing build tool: $1" >&2; exit 1; }; }
-for tool in curl tar make gcc g++ cmake git perl python3 cpio rsync bc bison flex; do need "$tool"; done
+for tool in curl tar make gcc g++ cmake git perl python3 cpio rsync bc bison flex ccache meson ninja; do need "$tool"; done
 
 mkdir -p "$OUT"
+
+# Keep downloaded source archives and compiler objects outside the Buildroot
+# output tree so GitHub Actions can cache them between independent runners.
+export BR2_DL_DIR="$OUT/buildroot-dl"
+CCACHE_STORE="$OUT/buildroot-ccache"
+mkdir -p "$BR2_DL_DIR" "$CCACHE_STORE"
+ccache --set-config=max_size=5G
+
 if [ ! -d "$SOURCE" ]; then
   curl -fL --retry 3 "https://buildroot.org/downloads/buildroot-$VERSION.tar.xz" -o "$ARCHIVE"
   tar -xJf "$ARCHIVE" -C "$OUT"
@@ -31,17 +39,50 @@ chmod 0755 "$OVERLAY/usr/bin/specman" "$OVERLAY/usr/bin/overos-gui"
 
 make -C "$SOURCE" O="$BUILD" defconfig BR2_DEFCONFIG="$ROOT/buildroot/overos_x86_64_defconfig"
 
+# Point Buildroot itself at the directory persisted by GitHub Actions.
+python3 - "$BUILD/.config" "$CCACHE_STORE" <<'PY'
+import pathlib, sys
+config = pathlib.Path(sys.argv[1])
+cache_dir = sys.argv[2]
+lines = config.read_text().splitlines()
+entry = 'BR2_CCACHE_DIR="' + cache_dir + '"'
+for i, line in enumerate(lines):
+    if line.startswith("BR2_CCACHE_DIR="):
+        lines[i] = entry
+        break
+else:
+    lines.append(entry)
+config.write_text("\n".join(lines) + "\n")
+PY
+make -C "$SOURCE" O="$BUILD" olddefconfig
+grep -qx 'BR2_TOOLCHAIN_BUILDROOT_CXX=y' "$BUILD/.config" || {
+  echo "Buildroot config did not enable target C++ support" >&2
+  exit 1
+}
+grep -qx 'BR2_CCACHE=y' "$BUILD/.config" || {
+  echo "Buildroot compiler cache is disabled in the effective config" >&2
+  exit 1
+}
+
 # Build the target compiler first, then compile OverOS native programs against
 # the Buildroot sysroot (never against the Ubuntu/Debian host libraries).
-make -C "$SOURCE" O="$BUILD" toolchain host-meson host-ninja
+make -C "$SOURCE" O="$BUILD" toolchain
 TOOLBIN="$BUILD/host/bin"
 CC=""
 for candidate in "$TOOLBIN"/*-gcc; do
   if [ -x "$candidate" ]; then CC="$candidate"; break; fi
 done
 [ -n "$CC" ] || { echo "Buildroot target GCC not found in $TOOLBIN" >&2; exit 1; }
-CXX="${CC%gcc}g++"
-[ -x "$CXX" ] || { echo "Buildroot target G++ not found: $CXX" >&2; exit 1; }
+CXX=""
+for candidate in "$TOOLBIN"/*-g++; do
+  if [ -x "$candidate" ]; then CXX="$candidate"; break; fi
+done
+[ -n "$CXX" ] || {
+  echo "Buildroot target G++ not found in $TOOLBIN; inspect $BUILD/.config and toolchain logs" >&2
+  exit 1
+}
+"$CC" -dumpmachine
+"$CXX" -dumpmachine
 SYSROOT="$("$CC" -print-sysroot)"
 [ -d "$SYSROOT" ] || { echo "Buildroot sysroot not found: $SYSROOT" >&2; exit 1; }
 
@@ -94,7 +135,7 @@ DESTDIR="$OVERLAY" cmake --install "$OUT/fastfetch-target-build"
 
 # Produce the first native OverVault package from the exact Fastfetch binary
 # installed into this OverOS rootfs overlay.
-OVEROS_OVERLAY="$OVERLAY" OVERVAULT_OUTPUT="$OUT/overvault/x86_64" \\
+OVEROS_OVERLAY="$OVERLAY" OVERVAULT_OUTPUT="$OUT/overvault/x86_64" \
   bash "$ROOT/overvault/tools/build-fastfetch-package.sh"
 
 install -d "$OVERLAY/usr/bin" "$OVERLAY/usr/sbin"
@@ -105,6 +146,11 @@ for binary in overos-init overos-session overos-supervisor; do
   install -m 0755 "$OUT/core-target-build/$binary" "$OVERLAY/usr/sbin/$binary"
 done
 
+
+# Build Pacman dependency libraries into the target sysroot before Meson
+# cross-compiles against them. `make toolchain` alone does not stage these
+# package headers and libraries.
+make -C "$SOURCE" O="$BUILD" -j"$(nproc)" libarchive libcurl libgpgme openssl zstd
 
 # Build upstream Pacman/libalpm for the OverOS musl userspace. This does not
 # use Arch Linux binary repositories: their packages target glibc and are
@@ -119,10 +165,10 @@ if [ ! -d "$PACMAN_SOURCE/.git" ]; then
   git -C "$PACMAN_SOURCE" fetch --depth 1 origin refs/tags/v7.0.0
   git -C "$PACMAN_SOURCE" checkout --detach FETCH_HEAD
 fi
-MESON="$BUILD/host/bin/meson"
-NINJA="$BUILD/host/bin/ninja"
-[ -x "$MESON" ] || { echo "Buildroot host-meson was not built" >&2; exit 1; }
-[ -x "$NINJA" ] || { echo "Buildroot host-ninja was not built" >&2; exit 1; }
+MESON="$(command -v meson)"
+NINJA="$(command -v ninja)"
+[ -x "$MESON" ] || { echo "Native Meson is unavailable on the build host" >&2; exit 1; }
+[ -x "$NINJA" ] || { echo "Native Ninja is unavailable on the build host" >&2; exit 1; }
 PKG_CONFIG_WRAPPER="$OUT/pkg-config-overos.sh"
 cat > "$PKG_CONFIG_WRAPPER" <<'EOF'
 #!/bin/sh
@@ -152,11 +198,25 @@ cpu_family = 'x86_64'
 cpu = 'x86_64'
 endian = 'little'
 EOF
-"$MESON" setup "$PACMAN_BUILD" "$PACMAN_SOURCE" --cross-file "$CROSS_FILE" --prefix=/usr --buildtype=release -Ddoc=disabled -Dtests=disabled
+"$MESON" setup "$PACMAN_BUILD" "$PACMAN_SOURCE" --cross-file "$CROSS_FILE" --prefix=/usr --buildtype=release -Ddoc=disabled -Di18n=false -Dcrypto=openssl
 "$NINJA" -C "$PACMAN_BUILD"
 DESTDIR="$OVERLAY" "$MESON" install -C "$PACMAN_BUILD"
 test -x "$OVERLAY/usr/bin/pacman"
-find "$OVERLAY/usr/lib" "$OVERLAY/usr/lib64" -name 'libalpm.so*' -print -quit 2>/dev/null | grep -q .
+# Meson may install libalpm under usr/lib or usr/lib64 depending on the
+# target layout. Only pass directories that actually exist to find; with
+# pipefail, a missing search directory would otherwise fail the whole build.
+LIBALPM_SEARCH_DIRS=()
+for libdir in "$OVERLAY/usr/lib" "$OVERLAY/usr/lib64"; do
+  [ ! -d "$libdir" ] || LIBALPM_SEARCH_DIRS+=("$libdir")
+done
+[ "${#LIBALPM_SEARCH_DIRS[@]}" -gt 0 ] || {
+  echo "Pacman installation created neither usr/lib nor usr/lib64" >&2
+  exit 1
+}
+find "${LIBALPM_SEARCH_DIRS[@]}" -name 'libalpm.so*' -print -quit | grep -q . || {
+  echo "libalpm shared library was not installed into the target overlay" >&2
+  exit 1
+}
 install -d "$OVERLAY/etc"
 cat > "$OVERLAY/etc/pacman.conf" <<'EOF'
 [options]
@@ -166,7 +226,10 @@ CacheDir = /var/cache/pacman/pkg/
 LogFile = /var/log/pacman.log
 GPGDir = /etc/pacman.d/gnupg/
 SigLevel = Required DatabaseRequired
-LocalFileSigLevel = Required
+# Development builds create local packages before the signing key/repository
+# deployment exists. Accept unsigned local files for now; if a signature is
+# present, Pacman still verifies it. Remote OverVault remains signature-required.
+LocalFileSigLevel = Optional
 
 # Official OverVault repository endpoint. The hosting workflow and trusted
 # public signing key must be deployed before remote installs can succeed.

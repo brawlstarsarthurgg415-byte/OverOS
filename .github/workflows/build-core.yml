@@ -22,9 +22,10 @@ on:
       - ".github/workflows/build-core.yml"
   workflow_dispatch:
 
+# Queue new builds instead of cancelling an in-progress image build.
 concurrency:
   group: overos-custom-core-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -38,7 +39,22 @@ jobs:
       - name: Install native build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential cmake libgtk-4-dev curl wget perl python3 cpio rsync bc bison flex file unzip libncurses-dev grub-pc-bin grub-efi-amd64-bin dosfstools parted e2fsprogs mtools qemu-system-x86 zstd
+          sudo apt-get install -y --no-install-recommends build-essential ccache cmake libgtk-4-dev curl wget perl python3 nodejs meson ninja-build pkg-config cpio rsync bc bison flex file unzip libncurses-dev libelf-dev grub-pc-bin grub-efi-amd64-bin dosfstools parted e2fsprogs mtools qemu-system-x86 ovmf udev zstd
+      - name: Restore Buildroot source and compiler caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            out/buildroot-dl
+            out/buildroot-ccache
+            out/buildroot-2025.02.tar.xz
+          key: overos-buildroot-${{ runner.os }}-2025.02-${{ hashFiles('buildroot/overos_x86_64_defconfig') }}
+          restore-keys: |
+            overos-buildroot-${{ runner.os }}-2025.02-
+      - name: Validate Buildroot C++ and cache configuration
+        run: |
+          grep -qx 'BR2_TOOLCHAIN_BUILDROOT_CXX=y' buildroot/overos_x86_64_defconfig
+          grep -qx 'BR2_CCACHE=y' buildroot/overos_x86_64_defconfig
+          bash -n scripts/build-buildroot-rootfs.sh scripts/build-bootable-img.sh
       - name: Check build host prerequisites
         run: bash scripts/check-build-host.sh
       - name: Validate touch and virtual keyboard assets
@@ -87,7 +103,27 @@ jobs:
             echo 'A imagem nao chegou ao console do OverOS dentro do teste QEMU.' >&2
             exit 1
           fi
-          echo 'Imagem inicializavel: banner OverOS Custom detectado no console serial.'
+          if ! grep -Eq 'login:' out/boot-test.log; then
+            tail -n 120 out/boot-test.log
+            echo 'A imagem mostrou o banner, mas nao chegou ao prompt de login serial.' >&2
+            exit 1
+          fi
+          echo 'BIOS: banner OverOS Custom e prompt de login detectados.'
+          set +e
+          timeout 90s qemu-system-x86_64 -m 1024 -bios /usr/share/OVMF/OVMF_CODE.fd -drive file=out/OverOS-Custom.img,format=raw -nographic -monitor none -serial stdio -no-reboot > out/boot-test-uefi.log 2>&1
+          status=$?
+          set -e
+          if ! grep -q 'OverOS Custom' out/boot-test-uefi.log; then
+            tail -n 120 out/boot-test-uefi.log
+            echo 'UEFI: a imagem nao chegou ao banner OverOS Custom no QEMU.' >&2
+            exit 1
+          fi
+          if ! grep -Eq 'login:' out/boot-test-uefi.log; then
+            tail -n 120 out/boot-test-uefi.log
+            echo 'UEFI: a imagem mostrou o banner, mas nao chegou ao prompt de login serial.' >&2
+            exit 1
+          fi
+          echo 'UEFI: banner OverOS Custom e prompt de login detectados.'
       - name: Publish raw IMG release asset
         uses: softprops/action-gh-release@v2
         with:
