@@ -42,6 +42,13 @@ jobs:
                 --volid FEDORA_TOUCH
               ls -lh /work/out
             '
+      - name: Install ISO editing utility
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xorriso
+      - name: Apply OverOS GRUB defaults
+        run: |
+          bash fedora/grub/patch-iso-grub.sh out
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
