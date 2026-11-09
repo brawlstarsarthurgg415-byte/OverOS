@@ -2,50 +2,55 @@ import { App, Gtk } from "astal/gtk4";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-const ACCENT = "#70d6d0";
-const MUTED = "#91a4b9";
-
 function label(text, css = "") {
     const widget = new Gtk.Label({ label: text, xalign: 0 });
     if (css) widget.add_css_class(css);
     return widget;
 }
 
-function makeButton(text, callback, primary = false) {
-    const button = new Gtk.Button({ label: text });
+function makeButton(text, callback, { primary = false, sensitive = true } = {}) {
+    const button = new Gtk.Button({ label: text, sensitive });
     button.add_css_class("overos-button");
     button.add_css_class(primary ? "primary" : "secondary");
     button.set_hexpand(true);
-    button.connect("clicked", callback);
+    if (callback) button.connect("clicked", callback);
     return button;
 }
 
 function makeAppTile(info) {
     const button = new Gtk.Button();
     button.add_css_class("overos-app-tile");
+    button._overosSearchName = info.get_display_name().toLocaleLowerCase();
+
     const content = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
         spacing: 8,
         halign: Gtk.Align.CENTER,
         valign: Gtk.Align.CENTER,
     });
-    const icon = new Gtk.Image({
-        gicon: info.get_icon(),
-        pixel_size: 30,
-    });
+
+    const appIcon = info.get_icon();
+    const icon = appIcon
+        ? new Gtk.Image({ gicon: appIcon, pixel_size: 30 })
+        : new Gtk.Image({ icon_name: "application-x-executable-symbolic", pixel_size: 30 });
     const title = new Gtk.Label({
         label: info.get_display_name(),
         ellipsize: 3,
-        max_width_chars: 12,
+        max_width_chars: 14,
         wrap: true,
         justify: Gtk.Justification.CENTER,
     });
+
     content.append(icon);
     content.append(title);
     button.set_child(content);
+    button.set_tooltip_text(info.get_display_name());
     button.connect("clicked", () => {
-        try { info.launch([], null); }
-        catch (error) { printerr("OverOS launcher: " + error); }
+        try {
+            info.launch([], null);
+        } catch (error) {
+            printerr("OverOS launcher: " + error);
+        }
     });
     return button;
 }
@@ -54,6 +59,7 @@ function buildLauncher() {
     const launcher = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
         spacing: 14,
+        hexpand: true,
     });
     launcher.add_css_class("overos-launcher");
 
@@ -86,17 +92,31 @@ function buildLauncher() {
         .filter(info => info.should_show())
         .sort((a, b) => a.get_display_name().localeCompare(b.get_display_name()));
 
-    for (const info of apps) flow.append(makeAppTile(info));
+    const tiles = apps.map(info => makeAppTile(info));
+    for (const tile of tiles) flow.append(tile);
+
+    const empty = label(
+        apps.length ? "Nenhum aplicativo corresponde à pesquisa." : "Nenhum aplicativo gráfico foi encontrado.",
+        "overos-muted",
+    );
+    empty.set_wrap(true);
+    empty.set_justify(Gtk.Justification.CENTER);
+    empty.set_margin_top(18);
+    empty.set_visible(apps.length === 0);
+    launcher.append(empty);
 
     search.connect("search-changed", () => {
-        const query = search.get_text().toLocaleLowerCase();
-        let child = flow.get_first_child();
-        while (child) {
-            const tile = child.get_child();
-            const name = tile.get_child().get_last_child().get_label().toLocaleLowerCase();
-            child.set_visible(!query || name.includes(query));
-            child = child.get_next_sibling();
+        const query = search.get_text().trim().toLocaleLowerCase();
+        let visibleCount = 0;
+        for (const tile of tiles) {
+            const matches = !query || tile._overosSearchName.includes(query);
+            tile.set_visible(matches);
+            if (matches) visibleCount += 1;
         }
+        empty.set_visible(visibleCount === 0);
+        empty.set_label(
+            apps.length ? "Nenhum aplicativo corresponde à pesquisa." : "Nenhum aplicativo gráfico foi encontrado.",
+        );
     });
 
     const scroll = new Gtk.ScrolledWindow({
@@ -115,22 +135,40 @@ function buildControlCenter() {
     });
     panel.add_css_class("overos-control-center");
     panel.append(label("Central de controle", "overos-title"));
-    panel.append(label("Ações disponíveis dependem dos serviços e drivers instalados.", "overos-muted"));
+    panel.append(label(
+        "Os controles são habilitados conforme os serviços disponíveis no sistema.",
+        "overos-muted",
+    ));
 
-    const row = new Gtk.Box({ spacing: 10 });
-    row.append(makeButton("Configurações", () => {
-        const info = Gio.DesktopAppInfo.new("overos-settings.desktop");
-        if (info) info.launch([], null);
-    }));
-    row.append(makeButton("Bloquear sessão", () => {
-        try { GLib.spawn_command_line_async("loginctl lock-session"); }
-        catch (error) { printerr(String(error)); }
-    }));
-    panel.append(row);
+    const settings = Gio.DesktopAppInfo.new("overos-settings.desktop");
+    panel.append(makeButton(
+        "Configurações",
+        () => settings?.launch([], null),
+        { sensitive: Boolean(settings) },
+    ));
+
+    const loginctl = GLib.find_program_in_path("loginctl");
+    panel.append(makeButton(
+        "Bloquear sessão",
+        () => {
+            try {
+                GLib.spawn_async(
+                    null,
+                    [loginctl, "lock-session"],
+                    null,
+                    GLib.SpawnFlags.SEARCH_PATH,
+                    null,
+                );
+            } catch (error) {
+                printerr("OverOS session lock: " + error);
+            }
+        },
+        { sensitive: Boolean(loginctl) },
+    ));
     return panel;
 }
 
-function buildWindow(monitor) {
+function buildWindow() {
     const window = new Gtk.Window({
         application: App,
         title: "OverOS",
@@ -153,9 +191,8 @@ function buildWindow(monitor) {
         valign: Gtk.Align.CENTER,
     });
     topbar.add_css_class("overos-topbar");
+    topbar.append(label("◈  OVEROS", "overos-title"));
 
-    const brand = label("◈  OVEROS", "overos-title");
-    topbar.append(brand);
     const spacer = new Gtk.Box();
     spacer.set_hexpand(true);
     topbar.append(spacer);
@@ -191,6 +228,7 @@ function buildWindow(monitor) {
     });
     side.set_size_request(250, -1);
     side.append(buildControlCenter());
+
     const about = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
         spacing: 8,
@@ -203,18 +241,21 @@ function buildWindow(monitor) {
     content.append(side);
     root.append(content);
 
-    const footer = label("USB-first • Windows preservado • modo experimental", "overos-muted");
-    root.append(footer);
+    root.append(label(
+        "USB-first • Windows preservado • modo experimental",
+        "overos-muted",
+    ));
     window.set_child(root);
     window.present();
-    return window;
 }
 
+const modulePath = GLib.filename_from_uri(import.meta.url)[0];
+const moduleDirectory = GLib.path_get_dirname(modulePath);
+const stylesheet = GLib.build_filenamev([moduleDirectory, "overos-shell.css"]);
+
 App.start({
-    css: "./overos-shell.css",
+    css: stylesheet,
     main() {
-        const monitors = App.get_monitors();
-        if (monitors.length) buildWindow(monitors[0]);
-        else buildWindow(null);
+        buildWindow();
     },
 });
