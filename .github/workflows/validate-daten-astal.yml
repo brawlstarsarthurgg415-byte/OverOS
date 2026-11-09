@@ -1,0 +1,32 @@
+name: Validate OverOS Astal scaffold
+
+on:
+  push:
+    branches: [daten-usb-astal]
+    paths:
+      - "rice/**"
+      - "scripts/test-astal-scaffold.sh"
+      - ".github/workflows/validate-daten-astal.yml"
+  pull_request:
+    branches: [daten-usb-astal]
+    paths:
+      - "rice/**"
+      - "scripts/test-astal-scaffold.sh"
+      - ".github/workflows/validate-daten-astal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-astal-scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends nodejs meson ninja-build
+      - name: Validate JavaScript and installable assets
+        run: bash scripts/test-astal-scaffold.sh
