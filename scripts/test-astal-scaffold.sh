@@ -16,6 +16,7 @@ need meson
 need ninja
 need cc
 need pkg-config
+need desktop-file-validate
 
 mkdir -p "$ROOT/out"
 
@@ -25,6 +26,8 @@ node --input-type=module --check < rice/astal/app.js
 echo "[2/5] Validando sintaxe dos estilos GTK4"
 cc scripts/validate-gtk-css.c -o "$ROOT/out/validate-gtk-css" $(pkg-config --cflags --libs gtk4)
 "$ROOT/out/validate-gtk-css" rice/overos-shell.css
+
+desktop-file-validate rice/astal/overos-shell.desktop
 
 echo "[3/5] Conferindo arquivos referenciados pelo shell"
 for file in rice/overos-shell.css rice/astal.css rice/components.css rice/touch-keyboard.css rice/astal/app.js rice/astal/overos-shell.desktop rice/astal/overos-shell.ini; do
