@@ -38,7 +38,7 @@ jobs:
 
               mkdir -p /work/downloads
               ISO_DIR="https://download.fedoraproject.org/pub/fedora/linux/releases/45/Everything/x86_64/iso"
-              ISO_NAME="$(curl --fail --location --retry 3 --silent --show-error "$ISO_DIR/" | grep -oE 'Fedora-Everything-netinst-x86_64-45-[^"<> ]+\\.iso' | sort -V | tail -n 1)"
+              ISO_NAME="$(curl --fail --location --retry 3 --silent --show-error "$ISO_DIR/" | grep -oE "Fedora-Everything-netinst-x86_64-45-[^<>[:space:]]+\\.iso" | sort -V | tail -n 1)"
               if [ -z "$ISO_NAME" ]; then
                 echo "Não foi possível localizar a ISO netinst do Fedora 45 no diretório oficial." >&2
                 exit 1
