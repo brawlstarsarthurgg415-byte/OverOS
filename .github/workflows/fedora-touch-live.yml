@@ -48,7 +48,7 @@ jobs:
               test -s /usr/share/edk2/ovmf/OVMF_CODE.fd
               test -e /dev/kvm
 
-              livemedia-creator \
+              if ! livemedia-creator \
                 --make-iso \
                 --virt \
                 --iso /work/downloads/Fedora-Everything-netinst.iso \
@@ -56,7 +56,18 @@ jobs:
                 --project "Fedora Touch Live" \
                 --releasever 45 \
                 --resultdir /work/out \
-                --volid FEDORA_TOUCH
+                --volid FEDORA_TOUCH; then
+                echo "===== LIVEMEDIA-CREATOR DIAGNOSTICS ====="
+                for log in /work/virt-install.log /work/out/*.log /work/out/*/*.log; do
+                  if [ -f "$log" ]; then
+                    echo "===== $log (last 250 lines) ====="
+                    tail -n 250 "$log"
+                  fi
+                done
+                echo "===== DISCOVERED LOG FILES ====="
+                find /work -maxdepth 5 -type f \\( -iname "*.log" -o -iname "*anaconda*" \\) -print
+                exit 1
+              fi
               ls -lh /work/out
             '
 
