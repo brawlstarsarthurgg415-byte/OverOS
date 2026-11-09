@@ -20,6 +20,10 @@ Astal/GJS é a camada de shell e widgets; Hyprland é o compositor Wayland. São
 - **low-memory:** animações reduzidas e menos atualizações em segundo plano.
 - **touch:** alvos maiores, launcher em primeiro plano e teclado virtual.
 
+## Verificações automatizadas
+
+O workflow `Validate OverOS Astal scaffold` verifica a sintaxe JavaScript, analisa o conjunto de folhas CSS com o parser GTK4 e confere a instalação dos assets e do arquivo `.desktop` via Meson com prefixo `/usr`. Isso não executa o app nem substitui o teste do runtime.
+
 ## Limitações atuais
 
 - O protótipo ainda não foi executado contra uma versão instalada do runtime Astal/GJS.
