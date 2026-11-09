@@ -1,5 +1,4 @@
 #version=F45
-text
 lang pt_BR.UTF-8
 keyboard --xlayouts='br'
 timezone America/Sao_Paulo --utc
@@ -11,7 +10,7 @@ bootloader --timeout=2 --append="rhgb quiet rd.live.ram=1"
 zerombr
 clearpart --all --initlabel
 autopart --type=plain
-reboot
+shutdown
 
 %packages
 dracut-live
