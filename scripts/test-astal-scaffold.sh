@@ -27,7 +27,7 @@ cc scripts/validate-gtk-css.c -o "$ROOT/out/validate-gtk-css" $(pkg-config --cfl
 "$ROOT/out/validate-gtk-css" rice/overos-shell.css
 
 echo "[3/5] Conferindo arquivos referenciados pelo shell"
-for file in rice/overos-shell.css rice/astal.css rice/components.css rice/astal/app.js rice/astal/overos-shell.desktop rice/astal/overos-shell.ini; do
+for file in rice/overos-shell.css rice/astal.css rice/components.css rice/touch-keyboard.css rice/astal/app.js rice/astal/overos-shell.desktop rice/astal/overos-shell.ini; do
   test -s "$file" || {
     echo "Arquivo ausente ou vazio: $file" >&2
     exit 1
@@ -46,6 +46,7 @@ test -s "$DESTDIR/usr/share/overos-shell/app.js"
 test -s "$DESTDIR/usr/share/overos-shell/overos-shell.css"
 test -s "$DESTDIR/usr/share/overos-shell/astal.css"
 test -s "$DESTDIR/usr/share/overos-shell/components.css"
+test -s "$DESTDIR/usr/share/overos-shell/touch-keyboard.css"
 test -s "$DESTDIR/usr/share/overos-shell/overos-shell.ini"
 test -s "$DESTDIR/usr/share/applications/overos-shell.desktop"
 grep -q 'Exec=gjs -m /usr/share/overos-shell/app.js' "$DESTDIR/usr/share/applications/overos-shell.desktop"
