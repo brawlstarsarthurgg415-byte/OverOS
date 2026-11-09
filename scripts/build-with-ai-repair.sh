@@ -15,14 +15,27 @@ git config user.email "overos-ai-repair@users.noreply.github.com"
 : > "$HISTORY"
 restore_checkpoint() { git reset --hard "$BASE_SHA"; git clean -fdx; }
 
+create_recovery_point() {
+  local tag="$1"
+  git tag -f "$tag" "$BASE_SHA" >/dev/null
+  if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+    encoded="$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)"
+    git -c "http.extraheader=AUTHORIZATION: basic $encoded" push origin "refs/tags/$tag"
+    unset encoded
+  else
+    echo "::error::Cannot publish recovery point without GITHUB_TOKEN."
+    return 1
+  fi
+}
+
 for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
   echo "::group::Build attempt $attempt/$MAX_ATTEMPTS"
-  git tag -f "$CHECKPOINT/attempt-$attempt" "$BASE_SHA" >/dev/null
+  create_recovery_point "$CHECKPOINT/attempt-$attempt"
   if bash scripts/build-fedora-iso.sh; then
     echo "ISO build and validation succeeded."
     echo "::endgroup::"
-    if ! git diff --quiet || ! git diff --cached --quiet; then
-      git add -A -- . ':!out' ':!downloads'
+    git add -A -- . ':!out' ':!downloads'
+    if ! git diff --cached --quiet; then
       git diff --cached --check
       git commit -m "AI repair: validated OverOS build [skip ci]"
       if [[ -n "${GITHUB_TOKEN:-}" && -n "${GITHUB_REPOSITORY:-}" ]]; then
@@ -82,7 +95,7 @@ for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
   fi
   if ! git diff --check ||
      ! find scripts -type f -name '*.sh' -print0 | xargs -0 -r -n1 bash -n ||
-     ! python3 -m compileall -q scripts; then
+     ! python3 -c 'import ast,pathlib; [ast.parse(p.read_text()) for p in pathlib.Path("scripts").rglob("*.py")]; print("Python syntax OK")'; then
     echo "::warning::Static validation failed; reverting the entire AI change."
     git diff --no-ext-diff >> "$HISTORY" || true
     restore_checkpoint
