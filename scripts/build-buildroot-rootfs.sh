@@ -150,7 +150,7 @@ done
 # Build Pacman dependency libraries into the target sysroot before Meson
 # cross-compiles against them. `make toolchain` alone does not stage these
 # package headers and libraries.
-make -C "$SOURCE" O="$BUILD" -j"$(nproc)" libarchive libcurl gpgme openssl zstd
+make -C "$SOURCE" O="$BUILD" -j"$(nproc)" libarchive libcurl libgpgme openssl zstd
 
 # Build upstream Pacman/libalpm for the OverOS musl userspace. This does not
 # use Arch Linux binary repositories: their packages target glibc and are
