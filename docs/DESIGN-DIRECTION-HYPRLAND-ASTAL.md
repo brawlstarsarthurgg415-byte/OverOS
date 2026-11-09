@@ -1,6 +1,6 @@
 # Direção visual — OverOS Shell (Hyprland + Astal)
 
-Estado: especificação visual inicial; não representa uma sessão gráfica implementada ou testada.
+Estado: especificação visual + primeiros arquivos de configuração/estilo criados; ainda não representa uma sessão gráfica compilada ou testada.
 
 ## Objetivo
 
@@ -42,4 +42,5 @@ As referências servem para estudar padrões de interface e arquitetura; não s�
 - Não declarar Hyprland, Astal, toque ou Wi-Fi como funcionais antes de compilar e testar.
 - Testar primeiro em QEMU; depois, testar por USB sem instalador e sem modificar o Windows 11 ou o armazenamento interno.
 - Manter Secure Boot ativado. Se a cadeia de confiança não puder ser validada sem alterar as chaves ou configurações do firmware, não avançar para um teste que exija contornar essa condição.
-- O protótipo CSS em `rice/` é somente a base de estilo, não uma sessão de desktop funcional.
+- Primeiros arquivos adicionados: `rice/hyprland/hyprland.conf`, `rice/astal/README.md` e `rice/overos-shell.css`.
+- O CSS e a configuração Hyprland são scaffolds; ainda não há pacote Buildroot, executável Astal, sessão integrada ou imagem testada.
