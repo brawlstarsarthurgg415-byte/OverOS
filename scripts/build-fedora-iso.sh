@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+mkdir -p out downloads
+rm -f out/*.iso out/*.log
+
+docker run --rm \
+  --privileged \
+  --device /dev/kvm \
+  --security-opt label=disable \
+  -v "$PWD:/work" -w /work \
+  fedora:latest bash -euxo pipefail -c '
+    dnf -y install lorax-lmc-novirt pykickstart anaconda-tui anaconda-core \
+      lorax lsof squashfs-tools xorriso grub2-efi-x64 shim-x64 \
+      qemu-kvm qemu-img edk2-ovmf virt-install libvirt-client curl
+    mkdir -p /work/downloads /work/out
+    ISO_DIR="https://download.fedoraproject.org/pub/fedora/linux/releases/45/Everything/x86_64/iso"
+    ISO_NAME="$(curl --fail --location --retry 3 --silent --show-error "$ISO_DIR/" | grep -oE "Fedora-Everything-netinst-x86_64-45-[^<>[:space:]]+\\.iso" | sort -V | tail -n 1)"
+    if [ -z "$ISO_NAME" ]; then
+      echo "Não foi possível localizar a ISO netinst do Fedora 45 no diretório oficial." >&2
+      exit 1
+    fi
+    curl --fail --location --retry 3 "$ISO_DIR/$ISO_NAME" --output /work/downloads/Fedora-Everything-netinst.iso
+    test -s /usr/share/edk2/ovmf/OVMF_CODE.fd
+    test -e /dev/kvm
+    livemedia-creator \
+      --make-iso --virt \
+      --iso /work/downloads/Fedora-Everything-netinst.iso \
+      --ks fedora/touch-live.ks \
+      --project "Fedora Touch Live" \
+      --releasever 45 \
+      --resultdir /work/out \
+      --logfile /work/out/livemedia-creator.log \
+      --volid FEDORA_TOUCH
+  ' 2>&1 | tee out/build.log
