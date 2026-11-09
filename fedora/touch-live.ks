@@ -9,7 +9,9 @@ selinux --enforcing
 bootloader --timeout=2 --append="rhgb quiet rd.live.ram=1"
 zerombr
 clearpart --all --initlabel
-autopart --type=plain
+part /boot/efi --fstype=efi --size=600
+part /boot --fstype=ext4 --size=1024
+part / --fstype=ext4 --size=8192 --grow
 shutdown
 
 %packages
