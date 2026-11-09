@@ -1,12 +1,29 @@
-# Wayland desktop candidates; GPU compatibility still requires hardware testing.
-sway
-waybar
-wofi
-foot
+# Arch Linux desktop stack for the OverOS live USB.
+# Hyprland is the selected compositor; Astal will be integrated from a pinned source recipe.
+hyprland
 xdg-desktop-portal
-xdg-desktop-portal-wlr
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+waybar
+fuzzel
+foot
 mesa
 vulkan-icd-loader
 networkmanager
 noto-fonts
 noto-fonts-emoji
+gjs
+gtk4
+gobject-introspection
+meson
+ninja
+polkit
+pipewire
+wireplumber
+bluez
+bluez-utils
+brightnessctl
+grim
+slurp
+wl-clipboard
+qt6-wayland

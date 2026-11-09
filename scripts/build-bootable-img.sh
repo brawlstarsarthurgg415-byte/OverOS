@@ -5,7 +5,7 @@ set -Eeuo pipefail
 # This script only writes to out/OverOS-Custom.img; it never selects a host disk.
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$ROOT/out"
-IMG="${OVEROS_IMAGE:-$OUT/OverOS-Custom.img}"
+IMG_REQUESTED="${OVEROS_IMAGE:-$OUT/OverOS-Custom.img}"
 ROOTFS_TAR="$OUT/overos-buildroot/rootfs.tar"
 KERNEL_IMAGE="$OUT/overos-buildroot/bzImage"
 MNT="$OUT/image-mount"
@@ -13,6 +13,26 @@ LOOP=""
 
 fail() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1 || fail "missing tool: $1"; }
+
+# Never allow the image builder to write to a physical disk or an arbitrary
+# path. Resolve the parent directory before touching the output and require
+# it to remain inside this repository's out/ directory.
+mkdir -p "$OUT"
+OUT_REAL="$(cd -- "$OUT" && pwd -P)"
+IMG_DIR="$(dirname -- "$IMG_REQUESTED")"
+IMG_BASE="$(basename -- "$IMG_REQUESTED")"
+[ -n "$IMG_BASE" ] && [ "$IMG_BASE" != "." ] && [ "$IMG_BASE" != ".." ] || fail "invalid image output filename"
+mkdir -p "$IMG_DIR"
+IMG_DIR_REAL="$(cd -- "$IMG_DIR" && pwd -P)"
+case "$IMG_DIR_REAL/" in
+  "$OUT_REAL/"*) ;;
+  *) fail "image output must be inside $OUT_REAL; physical disks and external paths are forbidden" ;;
+esac
+IMG="$IMG_DIR_REAL/$IMG_BASE"
+[ ! -L "$IMG" ] || fail "refusing to replace a symbolic link: $IMG"
+if [ -e "$IMG" ] && [ ! -f "$IMG" ]; then
+  fail "refusing to replace a non-regular file: $IMG"
+fi
 for tool in parted losetup mkfs.ext4 mkfs.vfat mount umount grub-install tar blkid udevadm; do need "$tool"; done
 [ "$(uname -m)" = x86_64 ] || fail "the current image target requires an x86_64 build host"
 if [ ! -s "$ROOTFS_TAR" ] || [ ! -s "$KERNEL_IMAGE" ]; then

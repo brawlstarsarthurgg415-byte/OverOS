@@ -1,3 +1,5 @@
+@import url("astal.css");
+
 /* OverOS shell surfaces — GTK4/Astal stylesheet
  * Uses the existing palette in astal.css. Avoid expensive effects on low-memory devices.
  */

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=OverOS Shell
+Comment=Interface personalizada do OverOS
+Exec=gjs -m /usr/share/overos-shell/app.js
+Icon=computer
+Terminal=false
+Type=Application
+Categories=System;Utility;
+StartupNotify=true

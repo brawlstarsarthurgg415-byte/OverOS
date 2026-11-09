@@ -1,7 +1,11 @@
-# Perfil ISO legado (referencia)
+# Perfil Archiso do OverOS
 
-Esta pasta contém um protótipo antigo que usa Archiso. Ele foi mantido no repositório apenas como referência de experimentos anteriores de interface.
+Este diretório contém as personalizações aplicadas ao perfil oficial `releng` do Archiso.
 
-**Este perfil não é o sistema independente OverOS e não deve ser apresentado como a imagem oficial do projeto.** A direção atual é montar um root filesystem próprio a partir de componentes individuais, conforme `core/ROOTFS-LAYOUT.md`.
+A distribuição-base do OverOS é Arch Linux. O script `scripts/build-iso.sh` copia o perfil oficial instalado pelo pacote `archiso`, acrescenta os pacotes listados em `packages.x86_64` e sobrepõe os arquivos em `airootfs/`.
 
-Não use esse perfil para afirmar que o OverOS independente está pronto. O pipeline oficial de imagem USB será criado depois que toolchain, kernel, libc, init, serviços e boot seguro forem integrados e testados.
+A ISO gerada é uma imagem de teste para inicialização externa. Ela não instala o sistema nem altera o armazenamento interno automaticamente.
+
+Hyprland + Wayland + Astal são a direção planejada da interface. A presença de arquivos de configuração ou pacotes candidatos não significa que a sessão gráfica já esteja completamente integrada ou validada.
+
+A ISO padrão não é declarada compatível com Secure Boot. Isso exige uma cadeia de boot assinada e validação no equipamento DATEN mantendo Secure Boot habilitado.
