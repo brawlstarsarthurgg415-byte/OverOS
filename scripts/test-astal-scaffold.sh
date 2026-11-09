@@ -14,11 +14,17 @@ need() {
 need node
 need meson
 need ninja
+need cc
+need pkg-config
 
 echo "[1/4] Validando sintaxe JavaScript como módulo ES"
 node --input-type=module --check < rice/astal/app.js
 
-echo "[2/4] Conferindo arquivos referenciados pelo shell"
+echo "[2/5] Validando sintaxe dos estilos GTK4"
+cc scripts/validate-gtk-css.c -o "$ROOT/out/validate-gtk-css" $(pkg-config --cflags --libs gtk4)
+"$ROOT/out/validate-gtk-css" rice/overos-shell.css
+
+echo "[3/5] Conferindo arquivos referenciados pelo shell"
 for file in rice/overos-shell.css rice/astal.css rice/components.css rice/astal/app.js rice/astal/overos-shell.desktop rice/astal/overos-shell.ini; do
   test -s "$file" || {
     echo "Arquivo ausente ou vazio: $file" >&2
@@ -26,14 +32,14 @@ for file in rice/overos-shell.css rice/astal.css rice/components.css rice/astal/
   }
 done
 
-echo "[3/4] Configurando projeto Meson"
+echo "[4/5] Configurando projeto Meson"
 BUILD_DIR="$ROOT/out/astal-scaffold-build"
 DESTDIR="$ROOT/out/astal-scaffold-install"
 rm -rf "$BUILD_DIR" "$DESTDIR"
 meson setup "$BUILD_DIR" rice/astal
 meson install -C "$BUILD_DIR" --destdir "$DESTDIR"
 
-echo "[4/4] Conferindo instalação dos assets"
+echo "[5/5] Conferindo instalação dos assets"
 test -s "$DESTDIR/usr/local/share/overos-shell/app.js"
 test -s "$DESTDIR/usr/local/share/overos-shell/overos-shell.css"
 test -s "$DESTDIR/usr/local/share/overos-shell/astal.css"
