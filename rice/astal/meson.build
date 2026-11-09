@@ -12,6 +12,7 @@ install_data(
   '../overos-shell.css',
   '../astal.css',
   '../components.css',
+  '../touch-keyboard.css',
   install_dir: shell_datadir,
 )
 
