@@ -27,8 +27,8 @@ jobs:
       - name: Build live ISO in an isolated Fedora VM
         run: |
           docker run --rm \
+            --privileged \
             --device /dev/kvm \
-            --cap-add SYS_ADMIN \
             --security-opt label=disable \
             -v "$PWD:/work" -w /work \
             fedora:latest bash -euxo pipefail -c '
