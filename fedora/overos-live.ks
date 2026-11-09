@@ -22,6 +22,10 @@ foot
 NetworkManager-wifi
 kernel-modules
 kernel-modules-extra
+shim-x64
+grub2-efi-x64
+grub2-efi-x64-modules
+kernel-core
 linux-firmware
 mesa-dri-drivers
 vulkan-loader
@@ -30,6 +34,8 @@ onboard
 %end
 
 %post --erroronfail
+# Keep Fedora's vendor-signed shim/GRUB/kernel boot chain intact for Secure Boot.
+# Do not replace EFI boot binaries or rebuild/sign a custom kernel here.
 # Ensure graphical boot and keep touchscreen support in the standard Fedora kernel.
 systemctl set-default graphical.target
 mkdir -p /etc/modules-load.d
