@@ -1,4 +1,4 @@
-import { App, Gtk, Gdk } from "astal/gtk4";
+import { App, Gtk } from "astal/gtk4";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
@@ -90,10 +90,12 @@ function buildLauncher() {
 
     search.connect("search-changed", () => {
         const query = search.get_text().toLocaleLowerCase();
-        for (const child of flow) {
-            const button = child.get_child();
-            const name = button.get_child().get_last_child().get_label().toLocaleLowerCase();
+        let child = flow.get_first_child();
+        while (child) {
+            const tile = child.get_child();
+            const name = tile.get_child().get_last_child().get_label().toLocaleLowerCase();
             child.set_visible(!query || name.includes(query));
+            child = child.get_next_sibling();
         }
     });
 
