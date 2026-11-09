@@ -6,6 +6,10 @@ on:
     paths:
       - "rice/**"
       - "scripts/test-astal-scaffold.sh"
+      - "scripts/test-image-output-guard.sh"
+      - "scripts/build-bootable-img.sh"
+      - "scripts/test-image-output-guard.sh"
+      - "scripts/build-bootable-img.sh"
       - "scripts/validate-gtk-css.c"
       - ".github/workflows/validate-daten-astal.yml"
   pull_request:
@@ -31,3 +35,5 @@ jobs:
           sudo apt-get install -y --no-install-recommends nodejs meson ninja-build libgtk-4-dev pkg-config desktop-file-utils
       - name: Validate JavaScript and installable assets
         run: bash scripts/test-astal-scaffold.sh
+      - name: Verify image builder refuses disks and external paths
+        run: bash scripts/test-image-output-guard.sh
