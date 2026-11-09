@@ -19,9 +19,13 @@ This is not an Arch Linux installation. The system remains the independent Build
 - `rice/overos-shell.css`: shell styling.
 - Existing `rice/astal.css` and `rice/components.css`: shared palette and touch-aware controls.
 
+## Image builder safety guard
+
+The raw-image builder now resolves its output directory and refuses paths outside the repository `out/` directory. It rejects device nodes, non-regular files and symbolic-link outputs before deleting or creating the image. A dedicated CI test covers `/dev/null`, an external path and a symbolic link. This protects the build host; it does not make the resulting GRUB image Secure Boot-compatible.
+
 ## Automated checks that currently pass
 
-The dedicated GitHub Actions workflow validates the GJS module's JavaScript syntax, parses the GTK4 stylesheet tree with GTK itself, and installs the shell assets plus desktop entry through Meson using the target `/usr` prefix. This is a scaffold/asset validation only; it does not execute the Astal app or build the compositor/runtime.
+The dedicated GitHub Actions workflow validates the GJS module's JavaScript syntax, parses the GTK4 stylesheet tree with GTK itself, installs the shell assets plus desktop entry through Meson using the target `/usr` prefix, and checks that the image builder rejects physical-device and external output paths. This is a scaffold/asset validation only; it does not execute the Astal app or build the compositor/runtime.
 
 ## Buildroot dependency audit
 
