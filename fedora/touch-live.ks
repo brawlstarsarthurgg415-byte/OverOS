@@ -14,6 +14,7 @@ autopart --type=plain
 reboot
 
 %packages
+dracut-live
 @^workstation-product-environment
 gnome-shell
 gnome-session-wayland-session
