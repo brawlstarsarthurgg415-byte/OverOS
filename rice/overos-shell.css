@@ -1,0 +1,59 @@
+/* OverOS shell surfaces — GTK4/Astal stylesheet
+ * Uses the existing palette in astal.css. Avoid expensive effects on low-memory devices.
+ */
+
+.overos-shell {
+  background: transparent;
+  color: @os_text;
+}
+
+.overos-topbar {
+  background: alpha(@os_bg, 0.96);
+  border: 1px solid @os_border;
+  border-radius: 18px;
+  padding: 8px 12px;
+}
+
+.overos-launcher {
+  background: alpha(@os_bg, 0.98);
+  border: 1px solid @os_border;
+  border-radius: 22px;
+  padding: 18px;
+}
+
+.overos-launcher-search {
+  min-height: 48px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: @os_surface;
+  border: 1px solid @os_border;
+  color: @os_text;
+}
+
+.overos-app-tile {
+  min-width: 76px;
+  min-height: 76px;
+  padding: 12px;
+  border-radius: 16px;
+  background: @os_surface;
+  border: 1px solid @os_border;
+}
+
+.overos-app-tile:hover,
+.overos-app-tile:focus {
+  background: @os_surface_alt;
+  border-color: alpha(@os_accent, 0.5);
+}
+
+.overos-control-center {
+  background: alpha(@os_bg, 0.98);
+  border: 1px solid @os_border;
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.overos-touch .overos-app-tile {
+  min-width: 88px;
+  min-height: 88px;
+  padding: 14px;
+}
