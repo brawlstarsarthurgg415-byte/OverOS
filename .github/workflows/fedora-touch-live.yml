@@ -3,6 +3,8 @@ name: Build Fedora Touch Live ISO
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     paths:
       - "fedora/**"
       - "scripts/**"
@@ -19,6 +21,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Prepare cache directories
+        run: mkdir -p downloads cache/dnf
+
+      - name: Cache Fedora installer and DNF packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            downloads/Fedora-Everything-netinst.iso
+            cache/dnf
+          key: overos-fedora45-netinst-1.4-dnf-${{ runner.os }}-${{ hashFiles('fedora/touch-live.ks') }}
+          restore-keys: |
+            overos-fedora45-netinst-1.4-dnf-${{ runner.os }}-
 
       - name: Check KVM availability
         run: |
