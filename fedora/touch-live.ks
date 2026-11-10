@@ -20,6 +20,8 @@ shutdown
 
 %packages
 dracut-live
+# Include BIOS GRUB modules required by livemedia-creator when assembling boot.iso.
+grub2-pc-modules
 @^workstation-product-environment
 gnome-shell
 gnome-session-wayland-session
