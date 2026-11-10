@@ -1,26 +1,30 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-mkdir -p out downloads
+mkdir -p out downloads cache/dnf
 rm -f out/*.iso out/*.log
 
 docker run --rm \
   --privileged \
   --device /dev/kvm \
   --security-opt label=disable \
-  -v "$PWD:/work" -w /work \
+  -v "$PWD:/work" -v "$PWD/cache/dnf:/var/cache/dnf" -w /work \
   fedora:latest bash -euxo pipefail -c '
+    mkdir -p /work/downloads /work/out /work/cache/dnf
+    work_uid="$(stat -c %u /work)"
+    work_gid="$(stat -c %g /work)"
+    trap '\''chown -R "$work_uid:$work_gid" /work/lmc-result /work/out /work/downloads /work/cache 2>/dev/null || true'\'' EXIT
     dnf -y install lorax-lmc-novirt pykickstart anaconda-tui anaconda-core \
       lorax lsof squashfs-tools xorriso grub2-efi-x64 shim-x64 \
       qemu-kvm qemu-img edk2-ovmf virt-install libvirt-client curl
-    mkdir -p /work/downloads /work/out
     rm -rf /work/lmc-result
     ISO_DIR="https://download.fedoraproject.org/pub/fedora/linux/releases/45/Everything/x86_64/iso"
-    ISO_NAME="$(curl --fail --location --retry 3 --silent --show-error "$ISO_DIR/" | grep -oE "Fedora-Everything-netinst-x86_64-45-[^<>[:space:]]+\\.iso" | sort -V | tail -n 1)"
-    if [ -z "$ISO_NAME" ]; then
-      echo "Não foi possível localizar a ISO netinst do Fedora 45." >&2
-      exit 1
+    ISO_NAME="Fedora-Everything-netinst-x86_64-45-1.4.iso"
+    if [ ! -s /work/downloads/Fedora-Everything-netinst.iso ]; then
+      curl --fail --location --retry 3 "$ISO_DIR/$ISO_NAME" --output /work/downloads/Fedora-Everything-netinst.iso
+    else
+      echo "Reusing cached Fedora netinst ISO."
     fi
-    curl --fail --location --retry 3 "$ISO_DIR/$ISO_NAME" --output /work/downloads/Fedora-Everything-netinst.iso
+    test -s /work/downloads/Fedora-Everything-netinst.iso
     test -s /usr/share/edk2/ovmf/OVMF_CODE.fd
     test -e /dev/kvm
     livemedia-creator \
