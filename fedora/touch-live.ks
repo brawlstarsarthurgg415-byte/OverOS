@@ -13,7 +13,8 @@ bootloader --timeout=2 --append="rhgb quiet rd.live.ram=1"
 zerombr
 clearpart --all --initlabel
 part /boot/efi --fstype=efi --size=600
-part /boot --fstype=ext4 --size=1024
+# Keep /boot inside the root filesystem so livemedia-creator can locate kernels
+# while assembling the SquashFS runtime and rebuilding initramfs images.
 part / --fstype=ext4 --size=16384 --grow
 shutdown
 
