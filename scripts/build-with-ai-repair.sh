@@ -5,6 +5,7 @@ RUN_ID="${GITHUB_RUN_ID:-local-$(date +%s)}"
 BRANCH="${GITHUB_REF_NAME:-main}"
 CHECKPOINT="recovery/overos-${RUN_ID}"
 HISTORY="/tmp/overos-repair-history-${RUN_ID}.txt"
+DIAG_ROOT="/tmp/overos-diagnostics-${RUN_ID}"
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "::error::Checkout is not clean; refusing an unsafe recovery point."
   exit 1
@@ -14,6 +15,29 @@ git config user.name "OverOS AI Repair"
 git config user.email "overos-ai-repair@users.noreply.github.com"
 : > "$HISTORY"
 restore_checkpoint() { git reset --hard "$BASE_SHA"; git clean -fdx; }
+capture_diagnostics() {
+  local attempt="$1"
+  local dest="$DIAG_ROOT/attempt-$attempt"
+  mkdir -p "$dest"
+  cp -a out/. "$dest/" 2>/dev/null || true
+  local combined="/tmp/overos-build-$RUN_ID-$attempt.log"
+  : > "$combined"
+  while IFS= read -r -d "" file; do
+    {
+      printf '\n===== %s =====\n' "$file"
+      tail -c 150000 "$file"
+      printf '\n'
+    } >> "$combined"
+  done < <(find "$dest" -type f -name '*.log' -print0)
+  if [[ ! -s "$combined" ]]; then
+    printf 'No log files were generated for attempt %s.\n' "$attempt" > "$combined"
+  fi
+}
+publish_diagnostics() {
+  mkdir -p out/diagnostics
+  if [[ -d "$DIAG_ROOT" ]]; then cp -a "$DIAG_ROOT/." out/diagnostics/; fi
+  cp "$HISTORY" out/repair-history.txt 2>/dev/null || true
+}
 
 create_recovery_point() {
   local tag="$1"
@@ -56,14 +80,15 @@ for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
   fi
   echo "::endgroup::"
   echo "::warning::Build attempt $attempt failed (exit $status)."
+  capture_diagnostics "$attempt"
   if (( attempt == MAX_ATTEMPTS )); then
     restore_checkpoint
+    publish_diagnostics
     echo "::error::Repair limit reached. Repository restored to checkpoint $BASE_SHA."
     exit "$status"
   fi
 
   mkdir -p out
-  cp out/build.log "/tmp/overos-build-$RUN_ID-$attempt.log" 2>/dev/null || true
   git add -A -- . ':!out' ':!downloads'
   if git diff --cached --quiet; then
     printf '\nAttempt %s: build failed without a working-tree patch.\n' "$attempt" >> "$HISTORY"
@@ -80,9 +105,10 @@ for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
     exit "$status"
   fi
   if ! python3 scripts/ai_repo_repair.py --log "/tmp/overos-build-$RUN_ID-$attempt.log" --history "$HISTORY" --output "/tmp/overos-repair-$RUN_ID.patch"; then
-    echo "::warning::AI could not produce a valid patch; trying another diagnosis."
-    printf '\nAttempt %s: AI returned no applicable patch.\n' "$attempt" >> "$HISTORY"
-    continue
+    echo "::error::AI repair could not return a patch. Stopping instead of repeating the same expensive build."
+    printf '\nAttempt %s: AI repair unavailable; diagnostics preserved.\n' "$attempt" >> "$HISTORY"
+    publish_diagnostics
+    exit "$status"
   fi
   if ! git apply --check "/tmp/overos-repair-$RUN_ID.patch"; then
     echo "::warning::Patch failed validation; checkpoint restored."

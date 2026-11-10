@@ -47,6 +47,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: overos-build-diagnostics
-          path: out/*.log
+          path: |
+            out/*.log
+            out/diagnostics/**
+            out/repair-history.txt
           if-no-files-found: ignore
           retention-days: 7
