@@ -11,7 +11,7 @@ zerombr
 clearpart --all --initlabel
 part /boot/efi --fstype=efi --size=600
 part /boot --fstype=ext4 --size=1024
-part / --fstype=ext4 --size=8192 --grow
+part / --fstype=ext4 --size=16384 --grow
 shutdown
 
 %packages
