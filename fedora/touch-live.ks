@@ -13,15 +13,17 @@ bootloader --timeout=2 --append="rhgb quiet rd.live.ram=1"
 zerombr
 clearpart --all --initlabel
 part /boot/efi --fstype=efi --size=600
-# Keep /boot inside the root filesystem so livemedia-creator can locate kernels
-# while assembling the SquashFS runtime and rebuilding initramfs images.
+# Keep /boot inside the root filesystem for livemedia-creator.
 part / --fstype=ext4 --size=16384 --grow
 shutdown
 
 %packages
 dracut-live
-# Include BIOS GRUB modules required by livemedia-creator when assembling boot.iso.
+# Required by Lorax for hybrid BIOS and UEFI boot image assembly.
 grub2-pc-modules
+grub2-efi-x64
+grub2-efi-x64-cdboot
+shim-x64
 @^workstation-product-environment
 gnome-shell
 gnome-session-wayland-session
@@ -47,6 +49,4 @@ gnome-software
 %post --erroronfail
 systemctl enable NetworkManager
 systemctl enable firewalld
-# Leave the signed Fedora shim/GRUB/kernel packages intact for Secure Boot validation.
-# RAM boot is requested via rd.live.ram=1; actual USB removal must be tested on target hardware.
 %end
