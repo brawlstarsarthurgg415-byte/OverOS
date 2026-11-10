@@ -14,7 +14,11 @@ BASE_SHA="$(git rev-parse HEAD)"
 git config user.name "OverOS AI Repair"
 git config user.email "overos-ai-repair@users.noreply.github.com"
 : > "$HISTORY"
-restore_checkpoint() { git reset --hard "$BASE_SHA"; git clean -fdx; }
+# Keep expensive reusable downloads/caches across AI rollback attempts.
+restore_checkpoint() {
+  git reset --hard "$BASE_SHA"
+  git clean -fdx -e downloads/ -e cache/
+}
 capture_diagnostics() {
   local attempt="$1"
   local dest="$DIAG_ROOT/attempt-$attempt"
@@ -23,11 +27,7 @@ capture_diagnostics() {
   local combined="/tmp/overos-build-$RUN_ID-$attempt.log"
   : > "$combined"
   while IFS= read -r -d "" file; do
-    {
-      printf '\n===== %s =====\n' "$file"
-      tail -c 150000 "$file"
-      printf '\n'
-    } >> "$combined"
+    { printf '\n===== %s =====\n' "$file"; tail -c 150000 "$file"; printf '\n'; } >> "$combined"
   done < <(find "$dest" -type f -name '*.log' -print0)
   if [[ ! -s "$combined" ]]; then
     printf 'No log files were generated for attempt %s.\n' "$attempt" > "$combined"
@@ -38,7 +38,6 @@ publish_diagnostics() {
   if [[ -d "$DIAG_ROOT" ]]; then cp -a "$DIAG_ROOT/." out/diagnostics/; fi
   cp "$HISTORY" out/repair-history.txt 2>/dev/null || true
 }
-
 create_recovery_point() {
   local tag="$1"
   git tag -f "$tag" "$BASE_SHA" >/dev/null
@@ -51,14 +50,13 @@ create_recovery_point() {
     return 1
   fi
 }
-
 for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
   echo "::group::Build attempt $attempt/$MAX_ATTEMPTS"
   create_recovery_point "$CHECKPOINT/attempt-$attempt"
   if bash scripts/build-fedora-iso.sh; then
     echo "ISO build and validation succeeded."
     echo "::endgroup::"
-    git add -A -- . ':!out' ':!downloads'
+    git add -A -- . ':!out' ':!downloads' ':!cache'
     if ! git diff --cached --quiet; then
       git diff --cached --check
       git commit -m "AI repair: validated OverOS build [skip ci]"
@@ -87,9 +85,8 @@ for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
     echo "::error::Repair limit reached. Repository restored to checkpoint $BASE_SHA."
     exit "$status"
   fi
-
   mkdir -p out
-  git add -A -- . ':!out' ':!downloads'
+  git add -A -- . ':!out' ':!downloads' ':!cache'
   if git diff --cached --quiet; then
     printf '\nAttempt %s: build failed without a working-tree patch.\n' "$attempt" >> "$HISTORY"
   else
@@ -99,7 +96,6 @@ for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
     { printf '\n===== BUILD LOG ATTEMPT %s =====\n' "$attempt"; tail -c 50000 "/tmp/overos-build-$RUN_ID-$attempt.log"; } >> "$HISTORY"
   fi
   restore_checkpoint
-
   if [[ -z "${OPENAI_API_KEY:-}" ]]; then
     echo "::error::OPENAI_API_KEY secret is missing. Repository remains at checkpoint."
     exit "$status"
