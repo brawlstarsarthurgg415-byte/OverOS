@@ -27,15 +27,37 @@ docker run --rm \
     test -s /work/downloads/Fedora-Everything-netinst.iso
     test -s /usr/share/edk2/ovmf/OVMF_CODE.fd
     test -e /dev/kvm
-    livemedia-creator \
-      --make-iso --virt \
-      --iso /work/downloads/Fedora-Everything-netinst.iso \
-      --ks fedora/touch-live.ks \
-      --project "Fedora Touch Live" \
-      --releasever 45 \
-      --resultdir /work/lmc-result \
-      --logfile /work/out/livemedia-creator.log \
-      --volid FEDORA_TOUCH
+    build_succeeded=0
+    for attempt in 1 2 3; do
+      rm -rf /work/lmc-result
+      echo "Starting Fedora image installation attempt $attempt/3."
+      if livemedia-creator \
+        --make-iso --virt \
+        --iso /work/downloads/Fedora-Everything-netinst.iso \
+        --ks fedora/touch-live.ks \
+        --project "Fedora Touch Live" \
+        --releasever 45 \
+        --resultdir /work/lmc-result \
+        --logfile "/work/out/livemedia-creator-attempt-$attempt.log" \
+        --volid FEDORA_TOUCH; then
+        build_succeeded=1
+        break
+      fi
+
+      if [ -f /work/out/virt-install.log ]; then
+        cp /work/out/virt-install.log "/work/out/virt-install-attempt-$attempt.log"
+      fi
+      if [ "$attempt" -eq 3 ] || ! grep -Eiq "No more mirrors to try|Failed to download.*packages|PayloadInstallationError" /work/out/virt-install.log 2>/dev/null; then
+        echo "Fedora image installation failed; error is not a retryable mirror/package download failure or retry limit was reached." >&2
+        exit 1
+      fi
+      echo "Package mirror/download failure detected. Refreshing the installer session and retrying in 20 seconds."
+      sleep 20
+    done
+    if [ "$build_succeeded" -ne 1 ]; then
+      echo "Fedora image installation did not succeed after three attempts." >&2
+      exit 1
+    fi
     shopt -s nullglob
     generated_isos=(/work/lmc-result/*.iso)
     if [ "${#generated_isos[@]}" -ne 1 ] || [ ! -s "${generated_isos[0]}" ]; then
