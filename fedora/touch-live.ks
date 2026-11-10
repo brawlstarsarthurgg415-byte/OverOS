@@ -2,6 +2,7 @@
 lang pt_BR.UTF-8
 keyboard --xlayouts='br'
 timezone America/Sao_Paulo --utc
+repo --name=hyprland-copr --baseurl=https://download.copr.fedorainfracloud.org/results/sdegler/hyprland/fedora-45-x86_64/
 rootpw --lock
 user --name=liveuser --groups=wheel --password=liveuser --plaintext
 firewall --enabled --service=mdns,ssh
