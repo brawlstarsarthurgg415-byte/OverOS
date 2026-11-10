@@ -13,6 +13,7 @@ docker run --rm \
       lorax lsof squashfs-tools xorriso grub2-efi-x64 shim-x64 \
       qemu-kvm qemu-img edk2-ovmf virt-install libvirt-client curl
     mkdir -p /work/downloads /work/out
+    rm -rf /work/lmc-result
     ISO_DIR="https://download.fedoraproject.org/pub/fedora/linux/releases/45/Everything/x86_64/iso"
     ISO_NAME="$(curl --fail --location --retry 3 --silent --show-error "$ISO_DIR/" | grep -oE "Fedora-Everything-netinst-x86_64-45-[^<>[:space:]]+\\.iso" | sort -V | tail -n 1)"
     if [ -z "$ISO_NAME" ]; then
@@ -28,9 +29,17 @@ docker run --rm \
       --ks fedora/touch-live.ks \
       --project "Fedora Touch Live" \
       --releasever 45 \
-      --resultdir /work/out \
+      --resultdir /work/lmc-result \
       --logfile /work/out/livemedia-creator.log \
       --volid FEDORA_TOUCH
+    shopt -s nullglob
+    generated_isos=(/work/lmc-result/*.iso)
+    if [ "${#generated_isos[@]}" -ne 1 ] || [ ! -s "${generated_isos[0]}" ]; then
+      echo "livemedia-creator did not produce exactly one non-empty ISO." >&2
+      find /work/lmc-result -maxdepth 2 -type f -printf "%p (%s bytes)\\n" >&2 || true
+      exit 1
+    fi
+    cp "${generated_isos[0]}" /work/out/
   ' 2>&1 | tee out/build.log
 
 sudo apt-get update
