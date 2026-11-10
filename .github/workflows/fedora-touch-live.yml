@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - fix/uefi-boot-and-build-cache
     paths:
       - "fedora/**"
       - "scripts/**"
