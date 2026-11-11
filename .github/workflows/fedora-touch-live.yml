@@ -1,8 +1,12 @@
+# AI model migration: use openai/gpt-oss-120b on GroqCloud.
 name: Build Fedora Touch Live ISO
 
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
+      - fix/uefi-boot-and-build-cache
     paths:
       - "fedora/**"
       - "scripts/**"
@@ -20,6 +24,33 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: AI self-test and Fastfetch environment check
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-4.1-mini
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: openai/gpt-oss-120b
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fastfetch
+          python3 scripts/test-ai-command-access.py
+          echo "::group::Fastfetch runner information"
+          fastfetch
+          echo "::endgroup::"
+
+      - name: Prepare cache directories
+        run: mkdir -p downloads cache/dnf
+
+      - name: Cache Fedora installer and DNF packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            downloads/Fedora-Everything-netinst.iso
+            cache/dnf
+          key: overos-fedora45-netinst-1.4-dnf-${{ runner.os }}-${{ hashFiles('fedora/touch-live.ks') }}
+          restore-keys: |
+            overos-fedora45-netinst-1.4-dnf-${{ runner.os }}-
+
       - name: Check KVM availability
         run: |
           if [ ! -e /dev/kvm ]; then
@@ -31,6 +62,8 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: gpt-4.1-mini
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: openai/gpt-oss-120b
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/build-with-ai-repair.sh
 
