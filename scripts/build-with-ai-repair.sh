@@ -128,8 +128,8 @@ for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
 
   restore_checkpoint
 
-  if [[ -z "${OPENAI_API_KEY:-}" ]]; then
-    echo "::error::OPENAI_API_KEY secret is missing. Repository remains at checkpoint."
+  if [[ -z "${GROQ_API_KEY:-}" && -z "${OPENAI_API_KEY:-}" ]]; then
+    echo "::error::Neither GROQ_API_KEY nor OPENAI_API_KEY secret is configured. Repository remains at checkpoint."
     exit "$status"
   fi
 
