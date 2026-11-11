@@ -1,3 +1,4 @@
+# AI model migration: use openai/gpt-oss-120b on GroqCloud.
 name: Build Fedora Touch Live ISO
 
 on:
