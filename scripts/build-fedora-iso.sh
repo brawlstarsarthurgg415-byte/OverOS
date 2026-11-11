@@ -60,7 +60,7 @@ docker run --rm \
       exit 1
     fi
     shopt -s nullglob
-    generated_isos=(/work/lmc-result/*.iso)
+    generated_isos=(/work/lmc-result/images/*.iso)
     if [ "${#generated_isos[@]}" -ne 1 ] || [ ! -s "${generated_isos[0]}" ]; then
       echo "livemedia-creator did not produce exactly one non-empty ISO." >&2
       find /work/lmc-result -maxdepth 2 -type f -printf "%p (%s bytes)\\n" >&2 || true
