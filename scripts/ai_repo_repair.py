@@ -72,7 +72,7 @@ def main():
     for candidate,key,endpoint,model in providers:
         req=urllib.request.Request(endpoint,
             data=json.dumps(dict(payload,model=model)).encode(),
-            headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"},method="POST")
+            headers={"Authorization":"Bearer "+key,"Content-Type":"application/json","User-Agent":"OverOS-AI-Repair/1.0 (GitHub Actions)"},method="POST")
         try:
             with urllib.request.urlopen(req,timeout=120) as r: result=json.loads(r.read().decode())
             provider=candidate
