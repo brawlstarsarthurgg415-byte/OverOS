@@ -58,15 +58,11 @@ publish_diagnostics() {
 
 create_recovery_point() {
   local tag="$1"
+  # Keep the checkpoint local: publishing a tag that points to a commit
+  # changing workflow files requires a separate workflows permission.
+  # The runner only needs this local tag for safe rollback during this job.
   git tag -f "$tag" "$BASE_SHA" >/dev/null
-  if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-    local encoded
-    encoded="$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)"
-    git -c "http.extraheader=AUTHORIZATION: basic $encoded" push origin "refs/tags/$tag"
-  else
-    echo "::error::Cannot publish recovery point without GITHUB_TOKEN."
-    return 1
-  fi
+  echo "::notice::Local recovery checkpoint created: $tag"
 }
 
 for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do

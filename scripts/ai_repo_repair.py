@@ -86,11 +86,6 @@ def main():
             print("AI provider unavailable:",last_error,file=sys.stderr)
     if result is None: die("All configured AI providers failed. "+last_error)
     try:
-        with urllib.request.urlopen(req,timeout=120) as r: result=json.loads(r.read().decode())
-    except urllib.error.HTTPError as e:
-        die(f"{provider} API HTTP {e.code}: {e.read().decode(errors='replace')[:1000]}")
-    except Exception as e: die(f"{provider} request failed: {type(e).__name__}: {e}")
-    try:
         obj=json.loads(result["choices"][0]["message"]["content"])
         if set(obj)!={"patch","reason"} or not isinstance(obj["patch"],str) or not isinstance(obj["reason"],str):
             raise ValueError("unexpected response shape")
