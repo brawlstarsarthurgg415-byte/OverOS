@@ -47,25 +47,36 @@ def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--log",required=True); ap.add_argument("--history",required=True); ap.add_argument("--output",required=True)
     a=ap.parse_args()
-    key=os.environ.get("OPENAI_API_KEY")
-    if not key: die("OPENAI_API_KEY is not configured")
+    # Prefer Groq when configured; otherwise retain the existing OpenAI API.
+    groq_key=os.environ.get("GROQ_API_KEY")
+    if groq_key:
+        key=groq_key
+        endpoint="https://api.groq.com/openai/v1/chat/completions"
+        model=os.environ.get("GROQ_MODEL","llama-3.3-70b-versatile")
+        provider="Groq"
+    else:
+        key=os.environ.get("OPENAI_API_KEY")
+        endpoint="https://api.openai.com/v1/chat/completions"
+        model=os.environ.get("OPENAI_MODEL","gpt-4.1-mini")
+        provider="OpenAI"
+    if not key: die("Neither GROQ_API_KEY nor OPENAI_API_KEY is configured")
     lp,hp=Path(a.log),Path(a.history)
     log=lp.read_text(errors="replace")[-50000:] if lp.exists() else "(no build log captured)"
     history=hp.read_text(errors="replace")[-30000:] if hp.exists() else ""
     prompt=("Repository files at the original recovery checkpoint:\n"+context()+
             "\n===== CURRENT BUILD FAILURE LOG =====\n"+log+
             "\n===== PREVIOUS FAILED ATTEMPTS (patches rolled back) =====\n"+history)
-    payload={"model":os.environ.get("OPENAI_MODEL","gpt-4.1-mini"),"temperature":0,
+    payload={"model":model,"temperature":0,
              "response_format":{"type":"json_object"},"max_tokens":8000,
              "messages":[{"role":"system","content":SYSTEM},{"role":"user","content":prompt}]}
-    req=urllib.request.Request("https://api.openai.com/v1/chat/completions",
+    req=urllib.request.Request(endpoint,
         data=json.dumps(payload).encode(),
         headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"},method="POST")
     try:
         with urllib.request.urlopen(req,timeout=120) as r: result=json.loads(r.read().decode())
     except urllib.error.HTTPError as e:
-        die(f"OpenAI API HTTP {e.code}: {e.read().decode(errors='replace')[:1000]}")
-    except Exception as e: die(f"OpenAI request failed: {type(e).__name__}: {e}")
+        die(f"{provider} API HTTP {e.code}: {e.read().decode(errors='replace')[:1000]}")
+    except Exception as e: die(f"{provider} request failed: {type(e).__name__}: {e}")
     try:
         obj=json.loads(result["choices"][0]["message"]["content"])
         if set(obj)!={"patch","reason"} or not isinstance(obj["patch"],str) or not isinstance(obj["reason"],str):
