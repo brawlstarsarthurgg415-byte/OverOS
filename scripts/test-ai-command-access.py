@@ -43,7 +43,7 @@ def main():
         request = urllib.request.Request(
             endpoint,
             data=json.dumps(payload).encode("utf-8"),
-            headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
+            headers={"Authorization": "Bearer " + key, "Content-Type": "application/json", "User-Agent": "OverOS-AI-Preflight/1.0 (GitHub Actions)"},
             method="POST",
         )
         try:
