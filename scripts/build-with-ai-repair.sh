@@ -58,9 +58,6 @@ publish_diagnostics() {
 
 create_recovery_point() {
   local tag="$1"
-  # Keep the checkpoint local: publishing a tag that points to a commit
-  # changing workflow files requires a separate workflows permission.
-  # The runner only needs this local tag for safe rollback during this job.
   git tag -f "$tag" "$BASE_SHA" >/dev/null
   echo "::notice::Local recovery checkpoint created: $tag"
 }
@@ -72,7 +69,8 @@ for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
   if bash scripts/build-fedora-iso.sh; then
     echo "ISO build and validation succeeded."
     echo "::endgroup::"
-    git add -A -- . ':!out' ':!downloads' ':!cache'
+    # Never stage disk images, even if an AI patch creates one.
+    git add -A -- . ':!out' ':!downloads' ':!cache' ':!lmc-result' ':!*.img' ':!**/*.img'
     if ! git diff --cached --quiet; then
       git diff --cached --check
       git commit -m "AI repair: validated OverOS build [skip ci]"
@@ -105,7 +103,8 @@ for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
   fi
 
   mkdir -p out
-  git add -A -- . ':!out' ':!downloads' ':!cache'
+  # Never stage disk images, even if an AI patch creates one.
+  git add -A -- . ':!out' ':!downloads' ':!cache' ':!lmc-result' ':!*.img' ':!**/*.img'
   if git diff --cached --quiet; then
     printf '\nAttempt %s: build failed without a working-tree patch.\n' "$attempt" >> "$HISTORY"
   else
