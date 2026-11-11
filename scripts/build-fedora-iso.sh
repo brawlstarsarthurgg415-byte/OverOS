@@ -14,7 +14,8 @@ docker run --rm \
     work_gid="$(stat -c %g /work)"
     trap '\''chown -R "$work_uid:$work_gid" /work/lmc-result /work/out /work/downloads /work/cache 2>/dev/null || true'\'' EXIT
     dnf -y install lorax-lmc-novirt pykickstart anaconda-tui anaconda-core \
-      lorax lsof squashfs-tools xorriso grub2-efi-x64 shim-x64 \
+      lorax lsof squashfs-tools xorriso grub2-efi-x64 grub2-efi-x64-cdboot \
+      grub2-pc-modules shim-x64 \
       qemu-kvm qemu-img edk2-ovmf virt-install libvirt-client curl
     rm -rf /work/lmc-result
     ISO_DIR="https://download.fedoraproject.org/pub/fedora/linux/releases/45/Everything/x86_64/iso"
