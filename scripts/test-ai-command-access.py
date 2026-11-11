@@ -11,7 +11,7 @@ def main():
     if os.environ.get("GROQ_API_KEY"):
         providers.append(("Groq", os.environ["GROQ_API_KEY"],
                           "https://api.groq.com/openai/v1/chat/completions",
-                          os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")))
+                          os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")))
     if os.environ.get("OPENAI_API_KEY"):
         providers.append(("OpenAI", os.environ["OPENAI_API_KEY"],
                           "https://api.openai.com/v1/chat/completions",
