@@ -47,31 +47,44 @@ def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--log",required=True); ap.add_argument("--history",required=True); ap.add_argument("--output",required=True)
     a=ap.parse_args()
-    # Prefer Groq when configured; otherwise retain the existing OpenAI API.
-    groq_key=os.environ.get("GROQ_API_KEY")
-    if groq_key:
-        key=groq_key
-        endpoint="https://api.groq.com/openai/v1/chat/completions"
-        model=os.environ.get("GROQ_MODEL","llama-3.3-70b-versatile")
-        provider="Groq"
-    else:
-        key=os.environ.get("OPENAI_API_KEY")
-        endpoint="https://api.openai.com/v1/chat/completions"
-        model=os.environ.get("OPENAI_MODEL","gpt-4.1-mini")
-        provider="OpenAI"
-    if not key: die("Neither GROQ_API_KEY nor OPENAI_API_KEY is configured")
+    # Try Groq first, then OpenAI if the first provider is unavailable.
+    providers=[]
+    if os.environ.get("GROQ_API_KEY"):
+        providers.append(("Groq",os.environ["GROQ_API_KEY"],
+            "https://api.groq.com/openai/v1/chat/completions",
+            os.environ.get("GROQ_MODEL","llama-3.3-70b-versatile")))
+    if os.environ.get("OPENAI_API_KEY"):
+        providers.append(("OpenAI",os.environ["OPENAI_API_KEY"],
+            "https://api.openai.com/v1/chat/completions",
+            os.environ.get("OPENAI_MODEL","gpt-4.1-mini")))
+    if not providers: die("Neither GROQ_API_KEY nor OPENAI_API_KEY is configured")
     lp,hp=Path(a.log),Path(a.history)
     log=lp.read_text(errors="replace")[-50000:] if lp.exists() else "(no build log captured)"
     history=hp.read_text(errors="replace")[-30000:] if hp.exists() else ""
-    prompt=("Repository files at the original recovery checkpoint:\n"+context()+
-            "\n===== CURRENT BUILD FAILURE LOG =====\n"+log+
-            "\n===== PREVIOUS FAILED ATTEMPTS (patches rolled back) =====\n"+history)
-    payload={"model":model,"temperature":0,
-             "response_format":{"type":"json_object"},"max_tokens":8000,
+    prompt=("Repository files at the original recovery checkpoint:\\n"+context()+
+            "\\n===== CURRENT BUILD FAILURE LOG =====\\n"+log+
+            "\\n===== PREVIOUS FAILED ATTEMPTS (patches rolled back) =====\\n"+history)
+    payload={"temperature":0,"response_format":{"type":"json_object"},"max_tokens":8000,
              "messages":[{"role":"system","content":SYSTEM},{"role":"user","content":prompt}]}
-    req=urllib.request.Request(endpoint,
-        data=json.dumps(payload).encode(),
-        headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"},method="POST")
+    result=None
+    provider=None
+    last_error="No AI provider returned a response."
+    for candidate,key,endpoint,model in providers:
+        req=urllib.request.Request(endpoint,
+            data=json.dumps(dict(payload,model=model)).encode(),
+            headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"},method="POST")
+        try:
+            with urllib.request.urlopen(req,timeout=120) as r: result=json.loads(r.read().decode())
+            provider=candidate
+            print("AI repair provider:",provider,"model:",model)
+            break
+        except urllib.error.HTTPError as e:
+            last_error=f"{candidate} API HTTP {e.code}: {e.read().decode(errors='replace')[:700]}"
+            print("AI provider unavailable:",last_error,file=sys.stderr)
+        except Exception as e:
+            last_error=f"{candidate} request failed: {type(e).__name__}: {e}"
+            print("AI provider unavailable:",last_error,file=sys.stderr)
+    if result is None: die("All configured AI providers failed. "+last_error)
     try:
         with urllib.request.urlopen(req,timeout=120) as r: result=json.loads(r.read().decode())
     except urllib.error.HTTPError as e:
