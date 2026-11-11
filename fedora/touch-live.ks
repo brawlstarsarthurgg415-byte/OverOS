@@ -2,7 +2,7 @@
 lang pt_BR.UTF-8
 keyboard --xlayouts='br'
 timezone America/Sao_Paulo --utc
-url --url=https://download.fedoraproject.org/pub/fedora/linux/releases/45/Everything/x86_64/os/
+url --metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-45&arch=x86_64
 network --bootproto=dhcp --device=link --activate
 repo --name=hyprland-copr --baseurl=https://download.copr.fedorainfracloud.org/results/sdegler/hyprland/fedora-45-x86_64/
 rootpw --lock
@@ -15,7 +15,7 @@ clearpart --all --initlabel
 part / --fstype=ext4 --size=16384 --grow
 shutdown
 
-%packages
+%packages --retries=10
 dracut-live
 # Required by Lorax for hybrid BIOS and UEFI boot image assembly.
 grub2-pc-modules
