@@ -1,0 +1,44 @@
+name: Build OverOS from Fedora KIWI upstream
+on:
+  workflow_dispatch:
+  push:
+    branches: [fedora-kiwi-upstream-touch-boot]
+    paths:
+      - '.gitmodules'
+      - 'vendor/fedora-kiwi-descriptions'
+      - 'patches/overos-fedora-kiwi.patch'
+      - 'scripts/build-fedora-kiwi-iso.sh'
+      - '.github/workflows/build-fedora-kiwi.yml'
+permissions:
+  contents: read
+concurrency:
+  group: overos-fedora-kiwi
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout OverOS and Fedora upstream submodule
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build Fedora Workstation Live ISO with OverOS adaptations
+        run: |
+          docker run --privileged --rm \
+            -v "$PWD:/work" -w /work \
+            fedora:latest bash -euxo pipefail -c '
+              dnf -y install kiwi kiwi-systemdeps distribution-gpg-keys git
+              bash scripts/build-fedora-kiwi-iso.sh
+            '
+      - name: List output
+        if: always()
+        run: find out/fedora-kiwi -maxdepth 2 -type f -printf '%p %s bytes\\n' || true
+      - name: Upload ISO
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OverOS-Fedora-KIWI-Workstation-Touch
+          path: out/fedora-kiwi/*.iso
+          if-no-files-found: error
+          retention-days: 7
