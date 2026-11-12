@@ -1,0 +1,3 @@
+[submodule "vendor/fedora-kiwi-descriptions"]
+	path = vendor/fedora-kiwi-descriptions
+	url = https://forge.fedoraproject.org/releng/kiwi-descriptions.git

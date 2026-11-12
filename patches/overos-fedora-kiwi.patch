@@ -1,0 +1,72 @@
+diff --git a/Fedora.kiwi b/Fedora.kiwi
+--- a/Fedora.kiwi
++++ b/Fedora.kiwi
+@@ -13,6 +13,7 @@
+ 	<include from="this://./repositories/core.xml"/>
+ 	<include from="this://./components/common.xml"/>
+ 	<include from="this://./components/boot.xml"/>
++	<include from="this://./components/overos-touchscreen.xml"/>
+ 	<include from="this://./components/desktops/common.xml"/>
+ 	<include from="this://./components/desktops/gnome.xml"/>
+ 	<include from="this://./components/desktops/kde.xml"/>
+diff --git a/components/boot.xml b/components/boot.xml
+--- a/components/boot.xml
++++ b/components/boot.xml
+@@ -6,6 +6,7 @@
+ 			<requires profile="BaseCommon"/>
+ 			<requires profile="HardwareCommon"/>
+ 			<requires profile="BootCore"/>
++			<requires profile="OverOS-Touchscreen"/>
+ 		</profile>
+ 	</profiles>
+ 	<preferences profiles="BootDiskCore" arch="x86_64,riscv64">
+diff --git a/components/liveinstall.xml b/components/liveinstall.xml
+--- a/components/liveinstall.xml
++++ b/components/liveinstall.xml
+@@ -3,6 +3,7 @@
+ 		<profile name="LiveInstall" description="Live Install ISO">
+ 			<requires profile="BaseCommon"/>
+ 			<requires profile="BootCoreLive"/>
++			<requires profile="OverOS-Touchscreen"/>
+ 		</profile>
+ 	</profiles>
+ 	<preferences profiles="LiveInstall" arch="x86_64">
+@@ -10,7 +11,7 @@
+ 			publisher="Fedora Project" volid="Fedora_Linux" application_id="Fedora_Linux"
+ 			primary="true" flags="dmsquash" filesystem="erofs" erofscompression="lzma,level=6" mediacheck="true"
+ 			firmware="uefi" efiparttable="gpt" efifatimagesize="30" kernelcmdline="quiet rhgb"
+ 			fscreateoptions="-Efragments -C 1048576"
+ 			>
+-			<bootloader name="grub2" grub_template="grub-x86.cfg.iso-template" console="console" timeout="10"/>
++			<bootloader name="grub2" grub_template="grub-x86.cfg.iso-template" console="console" timeout="5"/>
+ 		</type>
+ 	</preferences>
+ 	<preferences profiles="LiveInstall" arch="aarch64">
+diff --git a/grub-x86.cfg.iso-template b/grub-x86.cfg.iso-template
+--- a/grub-x86.cfg.iso-template
++++ b/grub-x86.cfg.iso-template
+@@ -1,6 +1,6 @@
+ # Inspired by the config used for lorax-built live media
+ 
+-set default="1"
++set default="0"
+ 
+ if [ "$$grub_platform" == "efi" ]; then
+ 	function load_video {
+diff --git a/components/overos-touchscreen.xml b/components/overos-touchscreen.xml
+new file mode 100644
+--- /dev/null
++++ b/components/overos-touchscreen.xml
+@@ -0,0 +1,12 @@
++<image>
++	<profiles>
++		<profile name="OverOS-Touchscreen" description="Touchscreen runtime support for live and installed systems">
++			<requires profile="BaseCommon"/>
++		</profile>
++	</profiles>
++	<packages type="image" patternType="plusRecommended" profiles="OverOS-Touchscreen">
++		<!-- Kernel input drivers are auto-loaded by udev from hardware modaliases. -->
++		<package name="libinput"/>
++		<package name="linux-firmware"/>
++	</packages>
++</image>
