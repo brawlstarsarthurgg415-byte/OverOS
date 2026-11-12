@@ -3,6 +3,8 @@ name: Build Fedora Touch Live ISO
 on:
   workflow_dispatch:
   push:
+    branches:
+      - fedora-gnome-hyprland-touch
     paths:
       - "fedora/**"
       - "scripts/**"
