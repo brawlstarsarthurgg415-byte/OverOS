@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source_dir="$repo_root/vendor/fedora-kiwi-descriptions"
-output_dir="$repo_root/out/fedora-kiwi"
+output_dir="$repo_root/out/fedora-kiwi-build"
 
 if [ ! -f "$source_dir/Fedora.kiwi" ]; then
   echo "Fedora KIWI submodule is missing. Run: git submodule update --init --recursive" >&2
