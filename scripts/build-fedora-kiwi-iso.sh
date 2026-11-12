@@ -3,7 +3,8 @@ set -Eeuo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source_dir="$repo_root/vendor/fedora-kiwi-descriptions"
-output_dir="$repo_root/out/fedora-kiwi-build"
+kiwi_output_base="$repo_root/out/fedora-kiwi"
+output_dir="${kiwi_output_base}-build"
 
 if [ ! -f "$source_dir/Fedora.kiwi" ]; then
   echo "Fedora KIWI submodule is missing. Run: git submodule update --init --recursive" >&2
@@ -22,7 +23,7 @@ git apply "$repo_root/patches/overos-fedora-kiwi.patch"
   --kiwi-file=Fedora.kiwi \
   --image-type=iso \
   --image-profile=Workstation-Live \
-  --output-dir "$output_dir"
+  --output-dir "$kiwi_output_base"
 
 shopt -s nullglob
 isos=("$output_dir"/*.iso)
