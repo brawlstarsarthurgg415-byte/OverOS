@@ -2,14 +2,14 @@
 
 The Fedora image-description repository is included as a Git submodule at
 `vendor/fedora-kiwi-descriptions`, pinned to upstream commit
-`9bb164948b699fdd81b5bb67449189dede0d5686`.
+`daf359394913068f4fc18a8b7aafc404caeb8257`.
 
 Official upstream:
 https://forge.fedoraproject.org/releng/kiwi-descriptions.git
 
-The pinned commit is an upstream Fedora commit preserved in the public
-t2linux mirror's history:
-https://github.com/t2linux/fedora-kiwi-descriptions/commit/daf359394913068f4fc18a8b7aafc404caeb8257 (mirror cherry-pick of upstream commit)
+The pinned commit is available from the official Fedora Forge submodule. Its
+source history is also preserved in the public t2linux mirror:
+https://github.com/t2linux/fedora-kiwi-descriptions/commit/daf359394913068f4fc18a8b7aafc404caeb8257
 
 OverOS keeps its customizations in `patches/overos-fedora-kiwi.patch`,
 rather than rewriting Fedora's source files in place. The patch:

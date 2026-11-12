@@ -8,6 +8,7 @@ on:
       - 'vendor/fedora-kiwi-descriptions'
       - 'patches/overos-fedora-kiwi.patch'
       - 'scripts/build-fedora-kiwi-iso.sh'
+      - 'docs/FEDORA-KIWI-OVEROS.md'
       - '.github/workflows/build-fedora-kiwi.yml'
 permissions:
   contents: read
