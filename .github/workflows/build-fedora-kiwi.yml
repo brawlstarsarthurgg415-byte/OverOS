@@ -34,12 +34,12 @@ jobs:
             '
       - name: List output
         if: always()
-        run: find out/fedora-kiwi -maxdepth 2 -type f -printf '%p %s bytes\\n' || true
+        run: find out/fedora-kiwi-build -maxdepth 2 -type f -printf '%p %s bytes\\n' || true
       - name: Upload ISO
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: OverOS-Fedora-KIWI-Workstation-Touch
-          path: out/fedora-kiwi/*.iso
+          path: out/fedora-kiwi-build/*.iso
           if-no-files-found: error
           retention-days: 7
