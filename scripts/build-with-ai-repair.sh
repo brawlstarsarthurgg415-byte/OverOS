@@ -21,6 +21,21 @@ git config user.name "OverOS AI Repair"
 git config user.email "overos-ai-repair@users.noreply.github.com"
 : > "$HISTORY"
 
+# Stage only project changes. Ignored build output (notably lmc-result/) must
+# never be passed explicitly to git add, because Git treats that as an attempt
+# to add an ignored path and aborts the whole recovery/build-success path.
+stage_project_changes() {
+  git add -u -- .
+  while IFS= read -r -d '' path; do
+    case "$path" in
+      out/*|downloads/*|cache/*|lmc-result/*|*.img)
+        continue
+        ;;
+    esac
+    git add -- "$path"
+  done < <(git ls-files --others --exclude-standard -z)
+}
+
 # Keep expensive reusable downloads/caches across AI rollback attempts.
 restore_checkpoint() {
   git reset --hard "$BASE_SHA"
@@ -69,8 +84,7 @@ for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
   if bash scripts/build-fedora-iso.sh; then
     echo "ISO build and validation succeeded."
     echo "::endgroup::"
-    # Never stage disk images, even if an AI patch creates one.
-    git add -A -- . ':!out' ':!downloads' ':!cache' ':!lmc-result' ':!*.img' ':!**/*.img'
+    stage_project_changes
     if ! git diff --cached --quiet; then
       git diff --cached --check
       git commit -m "AI repair: validated OverOS build [skip ci]"
@@ -103,8 +117,7 @@ for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
   fi
 
   mkdir -p out
-  # Never stage disk images, even if an AI patch creates one.
-  git add -A -- . ':!out' ':!downloads' ':!cache' ':!lmc-result' ':!*.img' ':!**/*.img'
+  stage_project_changes
   if git diff --cached --quiet; then
     printf '\nAttempt %s: build failed without a working-tree patch.\n' "$attempt" >> "$HISTORY"
   else
