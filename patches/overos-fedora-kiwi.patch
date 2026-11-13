@@ -34,7 +34,7 @@ diff --git a/components/liveinstall.xml b/components/liveinstall.xml
 @@ -10,7 +11,7 @@
  			publisher="Fedora Project" volid="Fedora_Linux" application_id="Fedora_Linux"
  			primary="true" flags="dmsquash" filesystem="erofs" erofscompression="lzma,level=6" mediacheck="true"
- 			firmware="uefi" efiparttable="gpt" efifatimagesize="30" kernelcmdline="quiet rhgb"
+ 			firmware="uefi" efiparttable="gpt" kernelcmdline="quiet rhgb"
  			fscreateoptions="-Efragments -C 1048576"
  			>
 -			<bootloader name="grub2" grub_template="grub-x86.cfg.iso-template" console="console" timeout="10"/>
@@ -57,16 +57,18 @@ diff --git a/components/overos-touchscreen.xml b/components/overos-touchscreen.x
 new file mode 100644
 --- /dev/null
 +++ b/components/overos-touchscreen.xml
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,14 @@
 +<image>
 +	<profiles>
-+		<profile name="OverOS-Touchscreen" description="Touchscreen runtime support for live and installed systems">
++		<profile name="OverOS-Touchscreen" description="Touchscreen runtime support and diagnostics">
 +			<requires profile="BaseCommon"/>
 +		</profile>
 +	</profiles>
 +	<packages type="image" patternType="plusRecommended" profiles="OverOS-Touchscreen">
-+		<!-- Kernel input drivers are auto-loaded by udev from hardware modaliases. -->
++		<!-- Kernel drivers are selected by the detected controller and loaded by udev. -->
 +		<package name="libinput"/>
++		<package name="libinput-utils"/>
++		<package name="evtest"/>
 +		<package name="linux-firmware"/>
 +	</packages>
 +</image>
